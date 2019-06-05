@@ -1,0 +1,767 @@
+releaseFirmwareVersion=release firmware
+## Button Area
+upload_status=upload status
+file_upload=Uploaded
+no_upload=Not uploaded
+add=add
+update=modify
+delete=delete
+query=search
+clear=clear
+audit=approval
+start=start
+stop=stop
+Freeze=freeze
+Thaw=thaw
+Logout=log out
+select_out_stock=Please select the record that needs to be sent out.
+inactivated=inactivated
+processing=processing
+inStockbeginTime=Start time
+inStockEndTime=End time
+login_time=login time
+now_version=The current version
+select_equipNo=Please select device serial number:
+check_freeze_msg=Please tick the users who need to be frozen !
+check_thaw_msg=Please tick the users who need to be thaw !
+select_cron=Please set schedule time!
+freeze_message=Whether you want to freeze the currently selected user ?
+thaw_message=Whether you want to thaw the currently selected user ?
+createtime=registration time
+totalcapacity=total capacity
+login_error_counts=login error times
+wechatno=wechat number
+spread=expand
+fold=collapse
+import=import
+export=export
+download=get template 
+impower=authorize
+batch_impower=batch authorize
+unlock=unlock
+refresh=refresh
+lock=lock
+normal=normal
+exception=exception
+app_status=application status
+##common area
+save=save
+cancel=cancel
+hint=hints
+enquire=enquiry
+query_criteria=searching criteria
+please_latter=please wait
+no_data=no data found
+all=all
+success=success
+error=failure
+upload=upload
+operate=operates
+login=login
+please_choice_data=please select
+please_select_a_file_first=please select a file
+please_choose_photos=please select an image
+no_data_export=no record found
+delete_message=confirm removing records
+enable_message=confirm enabling records
+disable_message=confirm disabling records
+unlockuser_msg=confirm unlocking user
+delete_msg=please select records to remove
+update_message=please select records to modify
+unlock_message=please select records to unlock
+regist_date=register date
+create_date=create date
+create_user=create person
+modify_date=modify date
+modify_begin_date=modify begin date
+modify_end_date=modify end date
+regist_begin_date=registration start time
+regist_end_date=registration end time
+modify_user=modify person
+update_time=update date
+update_begin=update start date
+update_end=update end date
+detail_info=details
+input_msg=input mandatory fields
+open_msg=please select the record that needs to be enabled
+stop_msg=please select the record that needs to be disabled
+opened_msg=This application is enabled. Please select an application that is not enabled
+stoped_msg=This application is disabled. Please select an application that is not disabled
+view_details=view details
+transfer_Limited=Instruction push...
+##common field area
+id=ID
+status=status
+remark=remarks
+address=address
+contact=contact person
+tel=telephone number
+op_user=operator
+op_time=operate date
+begin_date=start date
+end_date=end date
+unaudit=pending approval
+audit_test=trial
+audited=approved
+agree=agreed
+disagree=disagreed
+on_line=online
+off_line=offline
+not_moving=allowed
+moved=restricted
+audit_user=auditors
+
+##stock service area
+counts=number of incoming device
+out_counts=number of activation
+begin_sn=beginning serial number
+end_sn=ending serial number
+in=incoming
+undo=revoke
+undo_msg=please select device to revoke
+undo_message=device already revoked
+if_undo=confirm revoke selected device
+out=activate
+select_export_record=please select records to export
+undo_export_record=unable to export revoked records
+export_deteil=export details
+normal_sn_user_msg=Allow only normal users to be frozen!
+out_num=number of activating device not match
+summary=inventory volume
+device_status=status
+device_flag=flag
+revoke=revoke
+change=exchange
+reset=resume
+revoke_reason=revoke reason
+change_reason=exchange reason
+reset_reason=resume reason
+old_sn=original device serial no
+new_sn=new device serial no
+bind=activate
+unbind=deactivate
+bind_msg=confirm to activate
+unbind_msg=confirm to deactivate
+revoke_msg=please select device to revoke
+stock_msg=device status is not activated
+change_msg=please select exchanging devices
+reset_msg=please select resuming devices
+change_message=device status is not exchanged
+if_reset=confirm to resume
+in_out_flag=flag
+
+##fireware/os service area
+firmward_type=firmware type
+firmware_status=firmware exceptions
+firmware_exception_info=fimemware status
+ver_info=version details
+firmward_upload=firmware upload
+delete_info=not allowed to remove firmware under auditing
+ver_upload=version upload
+click_upload=please specify file location
+audit_flag=audit flag
+audit_content=audit comments
+firmware_ver=firmware version
+audit_msg=please select record for audit
+audit_fireware=firmware audit
+audit_test_msg=please select record for approval
+deploy_status=status
+select_pilot_release_record=Please select a record that needs to be released independently
+release_msg=unable to release deployed records
+fireware_pilot_release=firmware individual release
+select_release_record=please select version to release
+release_message=confirm release version
+unreleased=unreleased
+pilot_release=individual release
+released=released
+add_msg=not allowed to add again
+os_upload=OS version upload
+os_ver=OS version
+audit_os=audit OS
+os_pilot_release=OS trial
+os_pilot_release_tid_null=select device serial NO
+firmware=firmware
+os=OS
+audit_status_error=already performed audit
+####### fireware hint ######
+firmware_file_too_large=firmware file oversize
+please_select_vendor_first=please select device manufacturer
+please_select_termtype_first=please select device model
+please_select_firmtype_first=please select firmware type
+please_select_version_first=please select version details
+
+
+##business service area
+inst_no=acquirer ID
+inst_name=acquirer name
+merchant_no=internal merchant ID
+mid=merchant ID
+term_id=internal terminal ID
+tid=terminal ID
+sn=serial NO
+mer_name=merchant name
+short_name=merchant name abbreviation
+ip=master server ip
+port=master server port
+is_manager=perform key management
+add_inst=add acquirer details
+update_inst=update acquirer details
+ip2=secondary server ip
+port2=secondardy server port
+other_ip1=master merchant portal server ip
+other_port1=master merchant portal server port
+other_ip2=secondary merchant portal server ip
+other_port2=secondardy merchant portal server port
+keepalive_time=health check interval (min)
+timeout=timeout interval (sec)
+upload_interval=upload device time interval (min)
+reconnect_counts=upload device time interval (min)
+retry_counts=download retry attemps (0-3)
+info_set=config details
+comm_msg_set=config communication parameters
+third_comm_msg_set=config merchant portal communication parameters
+zmk_index=zmk index
+zmk=zmk
+kvc=kvc
+term_manager_pwd=admin password
+image_upload=upload image
+key_set=set key
+param_set=config basic parameters
+parameter_set=config advanced parameters
+term_status=device status
+attach_status=activation status
+install_address=registered address
+select_set_record=please select device to setup
+term_param_set=config terminal
+currency_code=currency code
+currency_name=currency name
+currency_code_or_name=currency code/name
+trade_large_number=maximum number of transactions
+receipt_print_num=number of receipts
+key_wait_time=wait input
+comm_timeout=server timeout
+auto_settle_time=auto settlement time
+comm_retry_num=number of server retry
+reversal_retry_num=number of reversal retry
+small_pay_limit=small pay limitation
+terminal_set=terminal parameters
+func_param=functional parameters
+func_switch=function settings
+key_down_status=tmk download status 
+no_attach=deactivated
+attached=activated
+sheet=pieces
+count=times
+no_download=not download
+downloaded=downloaded
+bound_state=bound state
+unbound=unbound
+bound=bound
+not_bound=you are not unbind
+param_file_upload=parameter file upload
+##system servcie area
+role_name=role name
+resourceids=priviliege
+uprole_message=unable to modify your current user role
+grrole_message=unable to gtant your current user role
+userdelete_msg=unable to remove current user
+userenable_msg=unable to enable current user
+userdisable_msg=unable to disable current user
+checkdelete_msg=please select removing items
+enable_msg=please select enabling items
+disable_msg=user already disabled
+check_disable_msg=please select disabling items
+user_impower_msg=unable to authorize current user
+checkuser_msg=please select user
+normaluser_msg=user already enabled
+unlock_msg=user is not locked
+update_role=modify role
+add_role=add role
+role_impower=role authorization
+system_resources=system resources
+select_all=select all
+invert=deselect
+username=username
+name=name
+pwd=password
+roleids=role id
+rolenames=role name
+editpwd=reset password
+update_user=modify user
+add_user=add user
+user_impower=authorization
+to=to
+client_ip=client ip
+op_type=operation type
+resource_id=resource id
+op_item=operation items
+view=view
+detail=details
+confirm=confirm
+table_name=table name
+field_name=field name
+old_record=original record
+new_record=new record
+resource_name=resource name
+resource_url=resource location
+typeid=resource type id
+typename=resource type
+seq=sequence
+pid=parent resource id
+pname=parent resource name
+update_resource=modify resources
+add_resource=add resources
+icon=icon
+corn_error=cron expressions conflict with day and week settings 
+
+##parameter service area
+vendor_no=device manufacturer id
+vendor_name=manufacturer name
+vendor_enname=manufacturer abbreviation
+term_type=device type
+term_model=device model
+email=email address
+add_vendor=add device manufacturer
+update_vendor=modify device manufacturer
+area_code=area code
+area_name=area name
+term_desc=device description
+term_url=device image
+add_term=add device model
+update_termmodify device model
+error_code=error code
+errordesc=error description
+error_desc=simplified error description
+traditional_error_desc=traditional error description
+english_error_desc=english error description
+advice=please check
+add_code=add error code
+update_code=modify error code
+bz_code=business code
+name_cn=simplified chinese name
+name_hk=traditional chinese name
+name_en=english name
+param_type=parameter type
+param_name=parameter name
+value=value
+value_cn=variable in simplified chinese
+value_hk=variable in traditional chinese
+value_en=variable in english
+refid=system parameter id
+pxh=sequential id
+edit_detail=modifing details
+delete_detail=removing details
+add_parameter=add
+select_param=please select parameter
+add_param_detail=add variable
+update_parameter=modify
+update_param_detail=modify system parameter details
+constant=constant
+variable=variable
+notice_content_null=the content of the announcement cannot be null 
+notice_content_length=no more than 500 announcements
+title_null=the title cannot be empty
+title_length=the title cannot exceed 60 bits
+
+##terminal service area
+last_conn=last update date
+location=gps location
+on_line_status=online status
+move_status=location status
+last_st_time=last shutdown date
+boot_time=last boot up date
+firm_type=firmware status
+alertinfo=alarm
+upload_time=upload date
+upload_begin=status update begin
+upload_end=status update end
+start_monitor=start monitor
+stop_monitor=stop monitor
+
+##count service area
+version=version no
+count_type=type of statistic
+firm_name=firmware name
+download_count=download counter
+unload_count=uninstall counter
+down_begin_date=start download date
+down_end_date=end download date
+unload_begin_date=uninsatll start date
+unload_end_date=uninstall end date
+
+##app service area
+appid=application id
+app_name=application name
+app_type=application type
+app_id= application id
+app_kind=application type
+hot_app=mandatory
+usable_app=optional
+ver_rule=application restriction
+description=application description
+add_app=add application details
+update_app=modify application details
+app_icon=application icon
+audit_status=approval result
+apply_user=approving user
+apply_time=approving date
+app_upload=upload application
+select_type=please select application type
+eg=eg.
+app_ver=application version
+audit_app=audit application
+deploy_user=release user
+deploy_time=release date
+app_pilot_release=application individual release
+app_release=application release
+is_uninstall=removable
+yes=yes
+no=no
+is_install=mandatory
+very_dissatisfied=miserably
+dissatisfied=dissatisfy
+general=neutral
+satisfied=satisfy
+very_satisfied=delightfully
+minute=minute
+not_recommend=not recommended
+dis_message= do not match with descriptions
+ge_message=not as good as expected
+sa_message= as described
+satisfied_msg= meet expectation
+finer=level of recommendion
+select_tid=select device for trial
+filter=filter
+audit_time=approval time
+
+##home page area
+home_page=homepage
+
+##prompt message area
+minlength=minimum length is {0} character
+maxlength=maximum length is {0} characters
+max_length=max length is 2 characters
+integer=no decimal
+integer_english=support digits and alphabet
+keepalive_time_msg=support 1-60 digits
+rules_msg=support 8 digits
+key_wait_time_msg=support 20-60 digits
+comm_timeout_msg=support 20-99 digits
+small_pay_limit_msg=support 0-99999999
+auto_settle_time_msg=support 0-9999
+counts_msg=maximum 1000 devices per upload
+
+
+non_access_exemption_limit= allowed contactless amount
+number=input digits
+
+
+warn_one_bind_term=only one terminal number left, unbind is not permit.
+## settle ##
+batch_no=batch no
+settle_time=settlement date
+settle_begin_time=settlement begin date
+settle_end_time=settlement end date
+pay_count=total number of transactions
+pay_sum=total amount of transactions
+rec_count=aggregated transactions
+rec_sum=aggregated amount
+
+trans_type=transaction type
+trans_num=number of transactions
+trans_money=transaction amount
+
+## end settle ##
+
+
+schedule_title=schedule task
+schedule_name=task name
+schedule_status=task status
+edit=edit
+exec=run
+new_task=new task
+task_desc=description
+exec_log=logs
+schedele_time=operation schedule
+show_log=view log
+warn=warning
+
+warn_task_is_open=please select stopped tasks
+warn_task_is_stop=please select started tasks
+task_is_opened=already enabled
+task_is_stoped=already disabled
+warn_select_task=please select task to run
+warn_select_only_one=support to run one task each time
+warn_start_task_first=task is disabled
+warn_task_name_empty=input task name
+warn_task_time_empty=input schedule date
+warn_select_line_first=please select data to modify
+warn_select_only_one_line=please select task to run
+start_time=start date
+schedule_start_time=scheduled start time
+schedule_end_time=scheduled end time
+task_exec_result=last run result
+schedule_task_exec_success=run task success
+schedule_task_exec_fail=run task failure
+##
+quartz_set_second=set second
+quartz_set_minute=set minute
+quartz_set_hour=set hour
+quartz_set_day=set day
+quartz_set_month=set month
+quartz_set_week=set week
+quartz_every_sec=every second
+quartz_every_minute=every minute
+quartz_every_hour=every hour
+quartz_every_month=every month
+quartz_every_week=every week
+quartz_every_day=every day
+quartz_quick_set=quick setup
+quartz_from1=from
+quartz_from2_second=second, every
+quartz_from2=minute, every
+quartz_from2_hour=hour, every
+quartz_from2_day=day, every
+quartz_from2_week=week, every
+quartz_from2_month=month, every
+quartz_from3_second=second, run task
+quartz_from3=minute, run task
+quartz_from3_hour=hour, run task
+quartz_from3_day=day, run task
+quartz_from3_week=week, run task
+quartz_from3_month=month, run task
+quartz_manul_set=manual define
+quartz_output_exp=generate task
+quartz_zhou1=monday
+quartz_zhou2=tuesday
+quartz_zhou3=wednesday
+quartz_zhou4=thursday
+quartz_zhou5=friday
+quartz_zhou6=saturday
+quartz_zhou7= sunday
+quartz_not_set=undefined
+
+## install result ###
+install_date=installation date
+install_date_begin=installation start date
+install_date_end=installation end date
+install_result=installation result
+## install result end###
+
+develop=developer
+first_net=network connection preference
+max_return_amount=maximum refund amount
+
+
+sn_offset=sn offset
+sn_length=sn length
+###  log_extract
+log_extract= retrieve log from terminal
+alarm_relieve=deactivate
+alarm_open=activate
+log_download=get log
+log_extracting=retrieving log...
+
+
+log_extract_success=log retrieve completed
+log_dont_allow_download=unable to download log
+log_extract_not_done=retrieve log incomplete
+log_extract_show_exception=view errors
+##add by ming 2016-12-18
+log_extract_failue=retrieve log failure
+### log_extract end
+ 
+off_len_error=sn offset error
+max_add=allowed to add
+tai=in maximum
+
+error_generate_sn=invalid sn format
+
+default_net=default
+
+####file ##
+file_select=select file
+
+
+
+####about push ####
+push_state= push status
+no_push=no push data
+is_pushing=getting data
+push_success=success
+
+
+#### on line or move ####
+on_line= online
+off_line=offline
+
+is_moved=restricted
+no_moved=allowed
+
+##### sysNoticnotice_title=\u6807\u9898
+notice_title=title
+notice_content=contents
+notice_expired=expiry date
+notice_status=status
+notice_to_audit=pending
+notice_audit_fail=rejected
+notice_audit_success=approvaed
+notice_created_by=created user
+notice_created_time=created date
+notice_changed_by=modified user
+notice_changed_time=modified date
+notice_audited_by=audit by
+notice_audited_time=audit date
+notice_audit_content=audit content
+notice_add_notice=add announcement
+notice_warn_have_audited=audit completed
+notice_audit_notice=audit announcement
+notice_warn_have_audided_success=audit completed
+notice_warn_have_audided_fail=rejected
+notice_notice_audit= audit announcement
+notice_update_notice=modify announcement
+
+notice_warn_audited_cannot_delete=audit completed, unable to remove
+
+##### sysNotice end #########
+
+req_error=request failure
+
+
+
+#### merchant_user manager ###########
+merchant_audit=audit merchant
+add_merchant_user_info=add merchant details
+audit_merchant_user_info=audit merchant account
+update_merchant_user_info=modify merchant account
+merchant_status=merchant status
+login_fail_times=login failed attempts
+of_merchant=belongs to merchant
+contact_address=contact address
+cell_phone=contact phone number
+close_merchant_user=disable merchant account
+warn_select_close_record=please select merchant
+
+warn_muser_status_to_audit=pending for approval
+warn_muser_status_closed=merchant is disabled
+warn_muser_status_opened=please enable merchant
+warn_muser_status_to_open=merchant is enabled
+warn_muser_open_first=please enable merchant
+
+record_closed=record is closed
+record_opened=record is active
+
+
+merchant_open=activate
+merchant_opened=activated
+merchant_closed=disabled
+merchant_to_audit=pending on approval
+merchant_short_name=merchant abbreviation
+contact=contact person
+mer_contact_email=merchant contact email
+applicant=applicant
+application_date=applied date
+auditor=auditor
+audit_date=audit date
+audit_content=audit contact
+merchant_open_title=activated merchant account
+merchant_advent_logo=merchant advertising logo
+#### merchant_user manager end #######
+
+#### merchant advent audit ############
+advent_position=advertising layout
+tip_bottom=buttom
+tip_top=top
+advent_content=advertising contents
+advent_publish_time=advertisement start date
+publish_begin_time=release start date
+publish_end_time=release end date
+advent_expired_time=advertisement end date
+advent_status=advertisement status
+advent_status_draft=advertisement draft
+advent_status_publish=release
+advent_status_audit_pass=approved
+advent_status_audit_fail=rejected
+warn_audit_publish_no_need_audit=already released
+merchant_advent_audit=audit advertisement
+merchant_advent_logo=advertising image
+#### merchant advent audit end ############
+
+allowed_offset_km=allowed distance (KM)
+
+warn_close_msg=confirm to close
+
+#### terminal monitor begin  ######
+term_monit_move_monit_rm=deactivate location restriction
+term_monit_move_monit_st=activate location restriction
+batch_operation=batch operation
+####  terminal monitor end  ######
+
+
+#### add by ming ######
+user_login = login
+user_logout = logout
+
+###
+
+import_begin_date=import begin date
+import_end_date=import end date
+merchant_nick_name=nickname
+
+####\u7ecf\u7eac\u5ea6
+term_monitor_latlng=gps location
+
+advent_publish_range=advertising duration
+
+advent_apply_mcht=apply user (merchant ID)
+
+please_input_inst_no=select acquirer id
+please_input_app_name=select application name
+
+please_select_app_type= select application type
+
+device_exchange_fault_description=issue description
+
+## cardbin page
+close=close
+card_bin=card bin
+card_bin_desc=card bin description
+card_bin_remark=card bin remark
+import_card_bin=Import card bin 
+template_download_xlsx=template download(xlsx)
+template_download_csv=template download(csv)
+select_the_organization_info=Please select the organization information
+select_the_correct_format_file=Please select CSV or xlsx file upload
+total_import=total import
+
+##inst_param page
+accept_type=accept type
+ip_or_url=host address (IP/URL)
+host_port=host port
+nii=international network number
+select_the_type_of_acceptance=Please select the type of acceptance
+enter_the_host_address=Please enter the host address
+enter_the_host_port=Please enter the host port
+key_type=key type
+symmetric=symmetric
+asymmetric=asymmetric
+select_the_record_to_set=Select the record you want to set
+complete=complete
+acquirer_logo=acquirer logo
+terminal_import=terminal import
+select_the_application_name=Please select the application name
+save_parameter_information_first=You have parameter information not saved
+input_nii_length_msg=The length of the international network number can not exceed 10
+input_ip_exp_msg=Please enter the host address (IP/URL)
+input_ip_length_msg=Host address length should not exceed 200 
+input_port_exp_msg=Host port please enter legal range [1025-65535]
+input_port_length_msg=Host port length should not exceed 5 
+input_tpdu_exp_msg=TPDU must enter a number
+input_tpdu_length_msg=TPDU length can not exceed 10
+input_zmk_index_msg=Please enter zmk index
+input_zmk_index_exp_msg=zmk index must be entered
+input_zmk_index_length_msg=The zmk index length should not exceed 4
+input_kvc_exp_msg=The kvc is only allowed to enter the A-F case in English or numeric characters
+input_kvc_length_msg=The length of the kvc cannot exceed 8 
+input_zmk_exp_msg=The zmk is only allowed to enter the A-F case in English or numeric characters
+input_zmk_length_msg=The length of the zmk cannot exceed 32 

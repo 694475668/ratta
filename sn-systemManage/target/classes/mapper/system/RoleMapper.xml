@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="role">
+	<resultMap type="com.ratta.suponote.model.system.Trole"
+		id="TroleBase">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="remark" property="remark" />
+		<result column="create_date" property="create_date" />
+		<result column="modify_date" property="modify_date" />
+		<result column="create_user" property="create_user" />
+		<result column="modify_user" property="modify_user" />
+	</resultMap>
+	<resultMap type="com.ratta.suponote.model.system.Trole"
+		id="Trole" extends="TroleBase">
+
+		<collection property="troles" javaType="java.util.Set"
+			ofType="com.ratta.suponote.model.system.Trole" column="id"
+			columnPrefix="c_" resultMap="TroleBase" />
+		<collection property="tresources" javaType="java.util.Set"
+			ofType="com.ratta.suponote.model.system.Tresource" column="id"
+			columnPrefix="r_" resultMap="resource.Tresource">
+		</collection>
+	</resultMap>
+	<sql id="sql_select_base">
+		select distinct t.id,t.name,t.remark,t.create_date,t.modify_date ,(select
+		u.name from t_m_user u where
+		u.username=t.create_user)create_user,(select u.name from t_m_user u
+		where u.username=t.modify_user) modify_user,
+		c.id c_id,c.name c_name,c.remark c_remark,c.create_date
+		c_create_date,c.modify_date c_modify_date,(select u.name from t_m_user
+		u where u.username=c.create_user) c_create_user,(select u.name from
+		t_m_user u where u.username=c.modify_user) c_modify_user,
+		r.id r_id,r.icon r_icon,
+		(
+		case
+		when '${locale.country}'='US' then
+		r.name_en
+		else
+		r.name
+		end
+		)
+		r_name,r.remark r_remark,r.url,y.id t_id,y.name t_name
+		from t_m_role c, t_m_role t
+		left join t_m_role_tresource tr on t.id=tr.trole_id
+		left join t_m_resource r on tr.tresource_id=r.id
+		left join t_m_resourcetype y on r.tresourcetype_id=y.id
+		where 1=1
+	</sql>
+	<!-- _parameter 固定写法，当传入的参数为一个字符串时候,就这样写 -->
+	<select id="getAllRole" parameterType="hashmap"
+		resultMap="Trole">
+		<include refid="sql_select_base" />
+
+		<if test="name != null">
+			and t.name like #{name}
+		</if>
+		<if test="child != null">
+			and exists (select 1 from t_m_user_trole ur where ur.trole_id=t.id and
+			ur.tuser_id=#{child})
+		</if>
+		<if test="user_id != null and user_id != ''">
+			and t.id in(select distinct tr.trole_id from t_m_user_trole tr where
+			tr.tuser_id= #{user_id})
+			<if test="user_id !='1' ">
+				and t.id != '0'
+			</if>
+		</if>
+		order by t.id
+	</select>
+
+
+
+	<!-- 根据id获取资源 -->
+	<select id="getRoleById" parameterType="hashmap"
+		resultMap="Trole">
+		<include refid="sql_select_base" />
+		and t.id=#{id}
+	</select>
+
+	<!-- 保存资源 -->
+	<insert id="insert"
+		parameterType="com.ratta.suponote.model.system.Trole">
+		insert into t_m_role values
+		(#{id},#{name},#{remark},sysdate(),null,#{create_user},null)
+	</insert>
+
+	<!-- 保存用户与角色的对应关系 -->
+	<insert id="saveUserRole" parameterType="hashmap">
+		insert into
+		t_m_user_trole values(#{u_id},#{r_id})
+	</insert>
+
+	<!-- 删除 将角色信息 -->
+	<delete id="delete"
+		parameterType="com.ratta.suponote.model.system.Trole">
+		delete from t_m_role where id=#{id}
+	</delete>
+
+	<!-- 删除角色与资源的对应关系 -->
+	<delete id="deleteRoleResource"
+		parameterType="com.ratta.suponote.model.system.Trole">
+		delete from t_m_role_tresource where trole_id=#{id}
+	</delete>
+
+	<!-- 删除角色与人员的对应关系 -->
+	<delete id="deleteRoleUser"
+		parameterType="com.ratta.suponote.model.system.Trole">
+		delete from t_m_user_trole where trole_id=#{id}
+	</delete>
+
+	<!-- update 更新角色 -->
+	<update id="update"
+		parameterType="com.ratta.suponote.model.system.Trole">
+		update t_m_role t set
+		t.name=#{name},t.remark=#{remark},t.modify_date=sysdate(),t.modify_user=#{modify_user}
+		where t.id=#{id}
+	</update>
+
+	<insert id="insertRoleResourcce" parameterType="hashmap">
+		insert into
+		t_m_role_tresource values (#{trole.id},#{tresource.id})
+	</insert>
+
+	<!-- 查询该角色下是否有用户 -->
+	<select id="hasUser" parameterType="hashmap" resultType="long">
+		select
+		count(1) from t_m_user_trole t where t.trole_id = #{id}
+	</select>
+</mapper>

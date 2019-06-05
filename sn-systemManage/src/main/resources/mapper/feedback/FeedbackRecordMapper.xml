@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="feedbackRecord">
+	<resultMap type="feedback_record" id="feedbackRecord">
+		<id column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="type_id" property="typeId" />
+		<result column="description" property="description" />
+		<result column="contact" property="contact" />
+		<result column="create_time" property="createTime" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select distinct t.id,t.user_id,t.type_id,t.description,t.contact,t.create_time
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="contact !=null and contact !='' ">
+			and t.contact like concat('%',trim(#{contact}),'%')
+		</if>
+		<if test="typeId !=null and typeId !='' ">
+			and t.type_id like concat('%',trim(#{typeId}),'%')
+		</if>
+	</sql>
+
+	<select id="query" resultMap="feedbackRecord" parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_feedback_record t
+		where 1=1 
+		<include refid="select_param" />
+		order by t.type_id asc 
+		<if test="p_begin !=null and p_begin !='' ">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_feedback_record t
+		where 1=1
+		<include refid="select_param" />
+	</select>
+	
+	<select id="queryById" parameterType="INTEGER" resultMap="feedbackRecord">
+		<include refid="Base_Column_List" />
+		from t_feedback_record t
+		where t.id = #{id}
+	</select>
+</mapper>

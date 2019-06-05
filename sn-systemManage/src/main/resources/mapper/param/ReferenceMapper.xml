@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="reference">
+	<resultMap type="reference_Reference" id="reference">
+		<id property='id' column='id' />
+		<result property="name" column="name" />
+		<result property="serial" column="serial" />
+		<result property="value" column="value" />
+		<result property='value_cn' column='value_cn' />
+		<result property='op_user' column='op_user' />
+		<result property='op_time' column='op_time' />
+	</resultMap>
+	<!-- 基本查询 -->
+	<sql id="select_base">
+		select t.id,t.name,t.serial,t.value,t.value_cn,
+		u.name
+		op_user,t.op_time
+	</sql>
+	<!-- 查询参数 -->
+	<sql id="select_params">
+		<if test="name !=null and name !='' ">
+			and t.name like concat('%',trim(#{name}),'%')
+		</if>
+	</sql>
+	<!-- 查询 -->
+	<select id="query" parameterType="hashmap" resultMap="reference">
+		<include refid="select_base" />
+		from
+		( select t.* from
+		(select t.* from t_m_reference t where 1=1
+		<include refid="select_params" />
+		order by t.name asc
+		limit #{p_begin},#{p_end}
+		)t
+		)t left join t_m_user u on u.username=t.op_user
+	</select>
+	<!-- 统计 -->
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(1) from t_m_reference t where 1=1
+		<include refid="select_params" />
+	</select>
+	<!-- 根据id查询 -->
+	<select id="queryById" parameterType="long"
+		resultMap="reference">
+		<include refid="select_base" />
+		from t_m_reference t left join t_m_user u on u.username=t.op_user
+		where t.id=#{id}
+	</select>
+	<!-- 添加 -->
+	<insert id="save" parameterType="reference_Reference">
+		insert into t_m_reference
+		(
+		name,
+		serial,
+		value,
+		value_cn,
+		op_user,
+		op_time
+		)
+		values(
+
+		#{name,jdbcType=VARCHAR},
+		#{serial,jdbcType=VARCHAR},
+		#{value,jdbcType=VARCHAR},
+		#{value_cn,jdbcType=VARCHAR},
+		#{op_user,jdbcType=VARCHAR},
+		sysdate()
+		)
+	</insert>
+	<!-- 更新 -->
+	<update id="update" parameterType="reference_Reference">
+		update t_m_reference t set
+		t.value=#{value,jdbcType=VARCHAR},
+		t.value_cn=#{value_cn,jdbcType=VARCHAR},
+		t.op_user=#{op_user,jdbcType=VARCHAR},
+		t.op_time=sysdate()
+		where t.id=#{id,jdbcType=VARCHAR}
+	</update>
+	<!-- 根据业务码查询参数信息 -->
+	<select id="queryByParamCode" parameterType="hashmap"
+		resultMap="reference">
+		<include refid="select_base" />
+		from
+		t_m_reference t left join t_m_user u on u.username=t.op_user
+		where 1=1
+		<if test="name != null and name !='' ">
+			and t.name =#{name}
+		</if>
+		<if test="serial != null and serial !='' ">
+			and t.serial =#{serial}
+		</if>
+	</select>
+	<!-- 根据id删除参数详细 -->
+	<delete id="deleteById" parameterType="long">
+		delete from t_m_reference
+		where id=#{id}
+	</delete>
+</mapper>

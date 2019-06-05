@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="firmware">
+	<resultMap type="firmware_Info" id="firmwareInfo">
+		<id column="id" property="id" />
+		<result column="AREA" property="area" />
+		<result column="CUSTOM" property="custom" />
+		<result column="configuration" property="configuration" />
+		<result column="VERSION" property="version" />
+		<result column="STATUS" property="status" />
+		<result column="MODIFY_POINT" property="modifyPoint" />
+		<result column="IMPACT_SCOPE" property="impactScope" />
+		<result column="VERSION_PURPOSE" property="versionPurpose" />
+		<result column="UPGRAGE_SCOPE" property="updrageScope" />
+		<result column="PACKAGING_TIME" property="packagingTime" />
+
+		<result column="AUDIT_FLAG" property="audit_flag" />
+		<result column="AUDIT_TIME" property="audit_time" />
+		<result column="AUDIT_INFO" property="audit_info" />
+		<result column="AUDIT_USER" property="audit_user" />
+
+		<result column="OP_USER" property="op_user" />
+		<result column="OP_TIME" property="op_time" />
+	</resultMap>
+
+	<resultMap type="firmware_Info_line" id="firmwareInfoline">
+		<id column="id" property="id" />
+		<result column="TYPE" property="type" />
+		<result column="VERSION" property="version" />
+		<result column="MODIFY_POINT" property="modify_point" />
+		<result column="IMPACT_SCOPE" property="impact_scope" />
+		<result column="VERSION_PURPOSE" property="version_purpose" />
+		<result column="UPGRAGE_SCOPE" property="updrage_scope" />
+		<result column="PACKAGING_TIME" property="packaging_time" />
+		<result column="FILE_URL" property="fileUrl" />
+		<result column="MERGE_FLAG" property="merge_flag" />
+		<result column="FIRM_ID" property="firm_id" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select DISTINCT t.id, (select d.value_cn from t_dictionary d where
+		d.value=t.AREA and d.name='AREA')AREA,
+		(select d.value_cn from t_dictionary d where d.value=t.CUSTOM and
+		d.name='CUSTOM')CUSTOM,
+		(select d.value_cn from t_dictionary d where d.value=t.configuration and
+		d.name='EQUIPMENT_CONFIG')configuration,
+		t.VERSION,(select d.value_cn from t_dictionary d where d.value=t.STATUS and
+		d.name='FIRMWARE_STATUS')STATUS,t.MODIFY_POINT,t.IMPACT_SCOPE,t.VERSION_PURPOSE,
+		t.UPGRAGE_SCOPE,
+		t.PACKAGING_TIME,t.AUDIT_FLAG,t.AUDIT_TIME,t.AUDIT_INFO,t.AUDIT_USER,
+		t.OP_USER,t.OP_TIME
+	</sql>
+	<!-- 查询版本号相似的固件集合 -->
+	<sql id="sql_FirmwareInfo_List">
+		select t.id, t.area, t.custom, t.configuration, t.version, t.status,
+		t.MODIFY_POINT, t.IMPACT_SCOPE,
+		t.VERSION_PURPOSE, t.UPGRAGE_SCOPE, t.PACKAGING_TIME, t.audit_flag, t.audit_time,
+		t.audit_info, t.audit_user,
+		t.op_user, t.op_time
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="version !=null and version !='' ">
+			and t.version like concat('%',trim(#{version}),'%')
+		</if>
+		<if test="area !=null and area !='' ">
+			and t.area=#{area}
+		</if>
+		<if test="custom !=null and custom !='' ">
+			and t.custom=#{custom}
+		</if>
+		<if test="configuration !=null and configuration !='' ">
+			and t.configuration=#{configuration}
+		</if>
+		<if test="status !=null and status !='' ">
+			and t.status=#{status}
+		</if>
+		<if test="audit_flag !=null and audit_flag !='' ">
+			and t.AUDIT_FLAG=#{audit_flag}
+		</if>
+		<if test="beginTime !=null and beginTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &gt;= #{beginTime}
+		</if>
+		<if test="endTime !=null and endTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</sql>
+	<!-- 查询参数 -->
+	<sql id="select_param_line">
+		<if test="firm_id != null and firm_id !='' ">
+			and t.firm_id =#{firm_id}
+		</if>
+		<if test="merge_flag !=null and merge_flag !='' ">
+			and t.merge_flag =#{merge_flag}
+		</if>
+		<if
+			test="p_begin !=null and p_begin !='' and p_end !=null and p_end !='' ">
+			order by t.FILE_NAME desc limit #{p_begin},#{p_end}
+		</if>
+	</sql>
+	<!--查询版本号相似的固件集合的参数 -->
+	<sql id="select_FirmwareInfo_List">
+		<if test="area !=null and area !='' ">
+			and t.area=#{area}
+		</if>
+		<if test="custom !=null and custom !='' ">
+			and t.custom=#{custom}
+		</if>
+		<if test="configuration !=null and configuration !='' ">
+			and t.configuration=#{configuration}
+		</if>
+		<if test="version !=null and version !='' ">
+			and t.version like #{version}
+		</if>
+	</sql>
+	<select id="query" resultMap="firmwareInfo"
+		parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_fireware_info t
+		where 1=1
+		<include refid="select_param" />
+		group by t.VERSION
+		<if test="versionType !=null and versionType !='' ">
+			having substring_index( t.VERSION, '_',-1) =#{versionType}
+		</if>
+		order by
+		t.op_time desc
+		<if test="p_begin != null">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from (
+		<include refid="Base_Column_List" />
+		from t_fireware_info t
+		where 1=1
+		<include refid="select_param" />
+		group by t.VERSION
+		<if test="versionType !=null and versionType !='' ">
+			having substring_index( t.VERSION, '_',-1)=#{versionType}
+		</if>
+		)t
+	</select>
+
+	<!-- 获取固件版本子类列表 -->
+	<select id="firmwareInfoLine" resultMap="firmwareInfoline"
+		parameterType="hashmap">
+		select t.id,t.type,t.VERSION from t_fireware_info_line t
+		where 1=1
+		<include refid="select_param_line" />
+	</select>
+
+	<!-- 统计固件版本子类列表 -->
+	<select id="countFirmwareInfoLine" resultType="long"
+		parameterType="hashmap">
+		select count(1) from t_fireware_info_line t
+		where 1=1
+		<include refid="select_param_line" />
+	</select>
+
+
+	<select id="queryById" parameterType="hashmap"
+		resultMap="firmwareInfo">
+		select t.id,t.AREA,
+		t.CUSTOM,
+		t.configuration,
+		t.VERSION,t.STATUS,t.MODIFY_POINT,t.IMPACT_SCOPE,t.VERSION_PURPOSE, t.UPGRAGE_SCOPE,
+		DATE_FORMAT(t.PACKAGING_TIME,'%Y-%m-%d %H:%i %s')PACKAGING_TIME,t.OP_USER,t.OP_TIME
+		from t_fireware_info t where id = #{id}
+	</select>
+
+	<select id="queryLine" parameterType="hashmap"
+		resultMap="firmwareInfoline">
+		select
+		t.ID,t.type,t.VERSION,t.MODIFY_POINT,t.IMPACT_SCOPE,t.VERSION_PURPOSE,t.UPGRAGE_SCOPE,
+		DATE_FORMAT(t.PACKAGING_TIME,'%Y-%m-%d %H:%i %s')PACKAGING_TIME
+		from t_fireware_info_line t where id = #{id}
+	</select>
+	<!-- 查询版本号相似的固件集合 -->
+	<select id="firmwareInfoList" resultMap="firmwareInfo"
+		parameterType="hashmap">
+		<include refid="sql_FirmwareInfo_List" />
+		from t_fireware_info t
+		where 1=1
+		<include refid="select_FirmwareInfo_List" />
+	</select>
+	<!-- 根据参数查询相应的小固件 -->
+	<select id="firmwareInfoLin" resultMap="firmwareInfoline"
+		parameterType="hashmap">
+		select *
+		from t_fireware_info_line t
+		where 1=1
+		<if test="firm_id !=null and firm_id !='' ">
+			and t.firm_id=#{firm_id}
+		</if>
+		<if test="type !=null and type !='' ">
+			and t.type=#{type}
+		</if>
+	</select>
+	<!-- 删除 固件版本信息 -->
+	<delete id="delete" parameterType="long">
+		delete from t_fireware_info
+		where id=#{id}
+	</delete>
+	<!-- 删除固件版本信息子类 -->
+	<delete id="deleteLine" parameterType="long">
+		delete from
+		t_fireware_info_line where firm_id=#{id}
+	</delete>
+	<!-- 审核固件 -->
+	<update id="commitAudit" parameterType="firmware_Info">
+		update t_fireware_info t
+		set
+		t.AUDIT_FLAG=#{audit_flag},
+		t.status='2',
+		t.AUDIT_INFO=#{audit_info},
+		t.AUDIT_USER=#{audit_user},
+		t.AUDIT_TIME=sysdate()
+		where t.id=#{id}
+	</update>
+	<!-- 根据版本号更改固件状态 -->
+	<update id="updateStatus" parameterType="firmware_Info">
+		update t_fireware_info t
+		set
+		t.status=#{status} ,
+		t.AUDIT_TIME=sysdate()
+		where t.version=#{version}
+	</update>
+	<!-- 添加大固件信息 -->
+	<insert id="insertFirmware" parameterType="firmware_Info"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into t_fireware_info
+		(
+		AREA,
+		CUSTOM,
+		configuration,
+		VERSION,
+		MODIFY_POINT,
+		IMPACT_SCOPE,
+		VERSION_PURPOSE,
+		UPGRAGE_SCOPE,
+		PACKAGING_TIME,
+		OP_USER,
+		OP_TIME)
+		values (
+		#{area},
+		#{custom},
+		#{configuration},
+		#{version},
+		#{modifyPoint},
+		#{impactScope},
+		#{versionPurpose},
+		#{updrageScope},
+		#{packagingTime},
+		#{op_user},
+		sysdate())
+	</insert>
+	<!-- 添加小固件信息 -->
+	<insert id="insertFirmwareInfoLine"
+		parameterType="firmware_Info_line">
+		insert into t_fireware_info_line
+		(
+		TYPE,
+		VERSION,
+		MODIFY_POINT,
+		IMPACT_SCOPE,
+		VERSION_PURPOSE,
+		UPGRAGE_SCOPE,
+		PACKAGING_TIME,
+		FILE_URL,
+		MERGE_FLAG,
+		FIRM_ID
+		)
+		values (
+		#{type},
+		#{version},
+		#{modify_point},
+		#{impact_scope},
+		#{version_purpose},
+		#{updrage_scope},
+		#{packaging_time},
+		#{fileUrl},
+		#{merge_flag},
+		#{firm_id}
+		)
+	</insert>
+	<!-- 根据固件ID查询相应的小固件 -->
+	<select id="firmwareInfoLineList" resultMap="firmwareInfoline"
+		parameterType="long">
+		select * from t_fireware_info_line t where t.firm_id=#{firmId}
+	</select>
+</mapper>

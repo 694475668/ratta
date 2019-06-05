@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="firmwareEquip">
+	<resultMap type="firmware_equipment" id="firmwareEquipment">
+		<id column="ID" property="id" />
+		<result column="EQUIPMENT_MODEL" property="equipment_model" />
+		<result column="TYPE" property="type" />
+		<result column="FIRMWARE_VERSION" property="firmware_version" />
+		<result column="UPLOAD_TIME" property="upload_time" />
+	</resultMap>
+
+
+	<sql id="Base_Column_List">
+		select t.ID,t.EQUIPMENT_MODEL,s.TYPE,t.FIRMWARE_VERSION,t.UPLOAD_TIME
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="version != null and version !='' ">
+			and t.FIRMWARE_VERSION =#{version}
+		</if>
+	</sql>
+
+	<select id="query" resultMap="firmwareEquipment"
+		parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_m_firmware_euip t
+		right join (select id,type from t_m_equiptype where 1=1
+		<if test="type != null and type !='' ">
+			and TYPE=#{type} 
+		</if>
+		) s on t.EQUIPMENT_MODEL=s.ID
+		where 1=1
+		<include refid="select_param" />
+		order by
+		t.UPLOAD_TIME desc
+		<if test="p_begin != null">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_m_firmware_euip t
+		right join (select id,type from t_m_equiptype where 1=1
+		<if test="type != null and type !='' ">
+			and TYPE like concat("%",trim(#{type}),"%")
+		</if>
+		) s on t.EQUIPMENT_MODEL=s.ID
+		where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<insert id="insertFirmwareEuip" parameterType="list">
+		insert into t_m_firmware_euip
+		(EQUIPMENT_MODEL,
+		UPLOAD_TIME,
+		FIRMWARE_VERSION)
+		values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.equipment_model},
+			sysdate(),
+			#{item.firmware_version})
+		</foreach>
+	</insert>
+	<!-- 删除固件版本信息子类 -->
+	<delete id="deleteFirmwareEquipType" parameterType="string">
+		delete from
+		t_m_firmware_euip where firmware_version=#{version}
+	</delete>
+</mapper>

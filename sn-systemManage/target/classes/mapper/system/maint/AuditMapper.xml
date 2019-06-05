@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="audit">
+	<resultMap type="audit_Audit" id="audit">
+		<id property='id' column='id' />
+		<result property='username' column='username' />
+		<result property='resource_id' column='resource_id' />
+		<result property='op_type' column='op_type' />
+		<result property='op_item' column='op_item' />
+		<result property='client_ip' column='client_ip' />
+		<result property='op_user' column='op_user' />
+		<result property='op_time' column='op_time' />
+	</resultMap>
+	<!-- 基本查询参数 -->
+	<sql id="select_base">
+		select
+		t.id, t.op_user username,
+		(
+		case
+		when '${sessionInfo.locale.country}'='US' then
+		tr.name_en
+		else
+		tr.name
+		end
+		)
+		resource_id,t.op_type,
+		ifnull((select m.msg from t_m_audit_msg m where m.`code`=t.op_item and
+		m.lan='${sessionInfo.locale.country}'),t.OP_ITEM) op_item,
+		t.client_ip,
+		(select u.name from t_m_user u where
+		u.username=t.op_user)op_user,
+		t.op_time
+	</sql>
+	<sql id="select_entity">
+		select t.id,
+		tr.name resource_id,t.op_type,t.op_item,t.client_ip,
+		t.op_user,
+		t.op_time
+	</sql>
+	<!-- 查询参数 -->
+	<sql id="select_params">
+		<if test="op_user != null and op_user != '' and op_user != '%%' ">
+			and exists (select 1 from t_m_user u where
+			u.username=t.op_user and u.name like concat('%',#{op_user},'%'))
+		</if>
+		<if test="client_ip != null and client_ip != ''">
+			and t.client_ip like concat('%',#{client_ip},'%')
+		</if>
+		<if test="op_time_begin !=null and op_time_begin !=''">
+			and date_format(t.op_time, '%Y-%m-%d')
+			&gt;=#{op_time_begin}
+		</if>
+		<if test="op_time_end !=null and op_time_end != '' ">
+			and date_format(t.op_time, '%Y-%m-%d') &lt;=#{op_time_end}
+		</if>
+		<if test="op_type!=null and op_type!='' ">
+			and t.op_type=#{op_type}
+		</if>
+	</sql>
+	<!-- 查询 -->
+	<select id="query" parameterType="hashmap" resultMap="audit">
+		<include refid="select_base" />
+		from (select tt.* from (select t.* from t_m_audit t where 1=1
+		<include refid="select_params" />
+		order by t.op_time desc limit #{p_begin},#{p_end}) tt
+		order by tt.op_time desc) t left join t_m_resource tr
+		on t.resource_id = tr.id
+		order by t.op_time desc
+	</select>
+	<!-- 统计 -->
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(1) from t_m_audit t where 1=1
+		<include refid="select_params" />
+	</select>
+	<!-- 添加 -->
+	<insert id="save" parameterType="audit_Audit">
+		insert into t_m_audit
+		(resource_id,op_type,op_item,client_ip,op_user)
+		values
+		(
+		#{resource_id,jdbcType=VARCHAR},
+		#{op_type,jdbcType=VARCHAR},
+		#{op_item,jdbcType=VARCHAR},
+		#{client_ip,jdbcType=VARCHAR},
+		#{op_user,jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 根据操作员id查询操作审计 -->
+	<select id="queryByOpUser" parameterType="long"
+		resultMap="audit">
+		<include refid="select_entity" />
+		from t_m_audit t left join t_m_resource tr on t.resource_id = tr.id
+		where t.op_user =(
+		select u.username
+		from t_m_user u
+		where u.id=#{id}
+		)
+	</select>
+
+	<delete id="deleteByDays" parameterType="long">
+		delete from t_m_audit
+		where
+		date_format(op_time,'%Y-%m-%d') &lt;=DATE_SUB(CURDATE(),INTERVAL #{daysBefore} DAY)
+	</delete>
+
+</mapper>

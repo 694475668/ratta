@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="inOutStock">
+	<resultMap id="inOutStock" type="inOut_Stock">
+		<id column="id" property="id" />
+		<result column="type" property="equipment_model" />
+		<result column="FIRMWARE_VERSION" property="firmware_version" />
+		<result column="EQUIPMENT_PURPOSE" property="equipment_purpose" />
+		<result column="DEALERS_NAME" property="dealers_name" />
+		<result column="COUNTS" property="counts" />
+		<result column="BEGIN_SN" property="begin_sn" />
+		<result column="END_SN" property="end_sn" />
+		<result column="FLAG" property="flag" />
+		<result column="STATUS" property="status" />
+		<result column="BATCH_NO" property="batch_no" />
+		<result column="NOTE" property="note" />
+		<result column="configuration" property="configuration" />
+		<result column="AREA" property="area" />
+		<result column="CUSTOM" property="custom" />
+		<result column="value_cn" property="value_cn" />
+		<result column="OP_USER" property="op_user" />
+		<result column="OP_TIME" property="op_time" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		SELECT distinct 
+		t.id,
+		d.type,
+		t.FIRMWARE_VERSION,
+		s.DEALERS_NAME,
+		t.COUNTS,
+		t.BEGIN_SN,
+		t.END_SN,
+		t.FLAG,
+		t.status,
+		t.BATCH_NO,
+		(select d.value_cn from t_dictionary d where d.value=t.equipment_purpose and
+		d.name='EQUIPMENT_PURPOSE')equipment_purpose,
+		t.NOTE,
+		(select d.value_cn from t_dictionary d where d.value=t.AREA and
+		d.name='AREA')AREA,
+		(select d.value_cn from t_dictionary d where d.value=t.CUSTOM and
+		d.name='CUSTOM')CUSTOM,
+		(select d.value_cn from t_dictionary d where d.value=t.configuration and
+		d.name='EQUIPMENT_CONFIG')configuration,
+		t.op_user,
+		t.op_time
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="configuration != null and configuration !='' ">
+			and t.configuration = #{configuration}
+		</if>
+		<if test="area !=null and area !='' ">
+			and t.area = #{area}
+		</if>
+		<if test="custom !=null and custom !='' ">
+			and t.custom=#{custom}
+		</if>
+        <if test="batchNos !=null and batchNos !='' ">
+			and t.batch_no in
+			<foreach collection="batchNos" item="item" index="index" open="(" separator="," close=")">
+				'${item}'
+			</foreach>
+		</if>
+		<if test="equipment_model != null and equipment_model !='' ">
+			and t.equipment_model =#{equipment_model}
+		</if>
+		<if test="batch_no !=null and batch_no !='' ">
+			and t.batch_no like concat('%',trim(#{batch_no}),'%')
+		</if>
+		<if test="flag !=null and flag !='' ">
+			and t.flag=#{flag}
+		</if>
+		<if test="status !=null and status !='' ">
+			and t.status=#{status}
+		</if>
+		<if test="equipment_purpose !=null and equipment_purpose !='' ">
+			and t.equipment_purpose=#{equipment_purpose}
+		</if>
+		<if test="dealers_name !=null and dealers_name !='' ">
+			and t.DEALERS_ID=#{dealers_name}
+		</if>
+        <if test="list !=null and list !='' ">
+			and t.batch_no in
+			<foreach collection="list" item="item" index="index" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="beginTime !=null and beginTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &gt;= #{beginTime}
+		</if>
+		<if test="endTime !=null and endTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</sql>
+	<!-- 生成id -->
+	<select id="generateId" resultType="long">
+		select ifnull(max(t.id),0)+1
+		from t_m_inout t
+	</select>
+	<select id="query" resultMap="inOutStock"
+		parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_m_inout t
+		left join t_m_dealers s on t.DEALERS_ID=s.ID
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		where 1=1
+		<include refid="select_param" />
+		order by
+		t.op_time desc
+		<if test="p_begin !=null">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_m_inout t
+		left join t_m_dealers s on t.DEALERS_ID=s.ID
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		where 1=1
+		<include refid="select_param" />
+	</select>
+	<!-- 查询批次号 -->
+	<select id="queryBatchNo" resultMap="inOutStock"
+		parameterType="hashmap">
+		select distinct t.BATCH_NO
+		from t_m_inout t
+		where 1=1
+		<include refid="select_param" />
+		and t.status='1'
+		order by
+		t.BATCH_NO desc limit #{p_begin},#{p_end}
+	</select>
+	<!-- 统计批次号 -->
+	<select id="countBatchNo" parameterType="hashmap"
+		resultType="long">
+		select count(distinct t.BATCH_NO)
+		from t_m_inout t
+		where 1=1
+		<include refid="select_param" />
+		and t.status='1'
+	</select>
+	<!-- 不分页获取出入库数据 -->
+	<select id="querySumAll" parameterType="hashmap"
+		resultMap="inOutStock">
+		<include refid="Base_Column_List" />
+		from t_m_inout t
+		left join t_m_dealers s on t.DEALERS_ID=s.ID
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		where 1=1
+		<include refid="select_param" />
+	</select>
+	<!-- 根据批次号查询设备型号和初始固件版本号 -->
+	<select id="queryByBatchNo" parameterType="string"
+		resultMap="inOutStock">
+		select distinct t.EQUIPMENT_MODEL,t.FIRMWARE_VERSION from t_m_inout t where
+		t.BATCH_NO=#{batchNo} and t.status='1'
+	</select>
+	<!-- 根据批次号查询设备用途 -->
+	<select id="queryEquipmentPurpose" parameterType="string"
+		resultMap="inOutStock">
+		select distinct t.equipment_purpose,s.value_cn from t_m_inout t
+		left join (select s.value,s.value_cn from t_dictionary s where
+		s.name='EQUIPMENT_PURPOSE')s
+		on t.EQUIPMENT_PURPOSE=s.value
+		where t.BATCH_NO=#{batchNo} and t.status='1' and t.flag='2'
+	</select>
+
+	<!-- 根据ID查询未转化的出入库记录 -->
+	<select id="queryAllById" parameterType="long"
+		resultMap="inOutStock">
+		select
+		t.id,
+		t.EQUIPMENT_MODEL,
+		t.FIRMWARE_VERSION,
+		t.DEALERS_ID DEALERS_NAME,
+		t.COUNTS,
+		t.BEGIN_SN,
+		t.END_SN,
+		t.FLAG,
+		t.status,
+		t.BATCH_NO,
+		t.equipment_purpose,
+		t.NOTE,
+		t.AREA,
+		t.CUSTOM,
+		t.configuration,
+		t.op_user,
+		t.op_time
+		from t_m_inout t
+		where t.id = #{id}
+	</select>
+
+	<!-- 添加 -->
+	<insert id="save" parameterType="inOut_Stock">
+		insert into t_m_inout
+		(
+		id,
+		equipment_model,
+		FIRMWARE_VERSION,
+		COUNTS,
+		BEGIN_SN,
+		END_SN,
+		FLAG,
+		status,
+		equipment_purpose,
+		BATCH_NO,
+		NOTE,
+		AREA,
+		CUSTOM,
+		configuration,
+		DEALERS_ID,
+		op_user,
+		op_time
+		)
+		values
+		(
+		#{id,jdbcType=INTEGER},
+		#{equipment_model,jdbcType=INTEGER},
+		#{firmware_version,jdbcType=VARCHAR},
+		#{counts,jdbcType=VARCHAR},
+		#{begin_sn,jdbcType=VARCHAR},
+		#{end_sn,jdbcType=VARCHAR},
+		#{flag,jdbcType=VARCHAR},
+		#{status,jdbcType=VARCHAR},
+		#{equipment_purpose,jdbcType=VARCHAR},
+		#{batch_no,jdbcType=VARCHAR},
+		#{note,jdbcType=VARCHAR},
+		#{area,jdbcType=VARCHAR},
+		#{custom,jdbcType=VARCHAR},
+		#{configuration,jdbcType=VARCHAR},
+		#{dealers_name,jdbcType=INTEGER},
+		#{op_user,jdbcType=VARCHAR},
+		sysdate()
+		)
+	</insert>
+	<!-- 更新 -->
+	<update id="update" parameterType="inOut_Stock">
+		update t_m_inout t set
+		t.status=#{status,jdbcType=VARCHAR},
+		t.op_user=#{op_user,jdbcType=VARCHAR},
+		t.op_time=sysdate()
+		where t.id=#{id}
+	</update>
+	<!-- 根据sn设备序列号查询入库信息 -->
+	<select id="queryNewInOut" parameterType="string"
+		resultMap="inOutStock">
+		<include refid="Base_Column_List" />
+		from t_m_inout t
+		left join t_m_dealers s on t.DEALERS_ID=s.ID
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		where t.id=
+		(select max(a.id) from t_m_inout a where a.flag=1 and a.begin_sn
+		&lt;=#{equipmentNo} and #{equipmentNo} &lt;=a.end_sn )
+	</select>
+	<!-- 删除经销商信息时，需要用经销商ID去出入库表查看是否有正常的记录 -->
+	<select id="queryByParams" parameterType="long"
+		resultType="long">
+		select count(*) from t_m_inout t where 1=1
+		<include refid="select_param" />
+	</select>
+	<!-- 根据出入库ID查询剩余库存记录和第一个设备号 -->
+	<select id="queryByInoutId" parameterType="hashmap"
+		resultMap="inOutStock">
+		select i.EQUIPMENT_MODEL,i.FIRMWARE_VERSION,i.BATCH_NO,count(*)
+		counts,min(t.EQUIPMENT_NO)
+		begin_sn,i.AREA,i.CUSTOM,i.CONFIGURATION,i.equipment_purpose
+		from t_m_stock t
+		LEFT JOIN t_m_inout i ON t.INOUT_ID = i.ID where
+		t.INOUT_ID=#{inout_id}
+		<if test="flag !=null and flag !='' ">
+			and t.FLAG=#{flag}
+		</if>
+
+	</select>
+</mapper>

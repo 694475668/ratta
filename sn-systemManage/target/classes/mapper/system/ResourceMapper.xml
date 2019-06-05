@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="resource">
+	<resultMap type="com.ratta.suponote.model.system.Tresource"
+		id="Tresource_Base">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="remark" property="remark" />
+		<result column="seq" property="seq" />
+		<result column="url" property="url" />
+		<result column="icon" property="icon" />
+		<result column="create_time" property="create_time" />
+		<result column="create_user" property="create_user" />
+		<result column="update_time" property="update_time" />
+		<result column="update_user" property="update_user" />
+		<association property="tresourcetype"
+			column="tresourcetype_id"
+			javaType="com.ratta.suponote.model.system.Tresourcetype">
+			<id column="t_id" property="id" />
+			<result column="t_name" property="name" />
+		</association>
+	</resultMap>
+	<resultMap type="com.ratta.suponote.model.system.Tresource"
+		id="Tresource" extends="Tresource_Base">
+		<association property="tresource" column="pid"
+			columnPrefix="p_" resultMap="Tresource_Base">
+		</association>
+		<collection property="tresources" column="id"
+			columnPrefix="c_" resultMap="Tresource_Base">
+		</collection>
+	</resultMap>
+	<sql id="sql_base_select">
+		select distinct t.id,t.icon,
+		(
+		case
+		when '${locale.country}'='US' then
+		t.name_en
+		else
+		t.name
+		end
+		)
+		name,
+		(
+		case
+		when '${locale.country}'='US' then
+		t.remark_en
+		else
+		t.remark
+		end
+		)remark,
+		t.seq,t.url,t.create_time,t.update_time,y.id t_id,
+		(
+		case
+		when '${locale.country}'='US' then
+		y.name_en
+		else
+		y.name
+		end
+		)
+		t_name,p.id p_id,
+		(
+		case
+		when '${locale.country}'='US' then
+		p.name_en
+		else
+		p.name
+		end
+		)
+		p_name,
+		(
+		case
+		when '${locale.country}'='US' then
+		t.remark_en
+		else
+		t.remark
+		end
+		) p_remark,p.seq p_seq,
+		p.url p_url,p.create_time p_create_time,p.update_time p_update_time
+		from t_m_resource t left join t_m_resource p on t.pid = p.id ,
+		t_m_resourcetype y
+		where t.tresourcetype_id = y.id
+	</sql>
+	<sql id="sql_orderby">
+		order by t.seq
+	</sql>
+	<select id="queryAllResource" resultMap="Tresource"
+		parameterType="hashmap">
+		<include refid="sql_base_select" />
+		<if test="resourceTypeId != null">
+			and t.tresourcetype_id = #{resourceTypeId}
+		</if>
+		<if test="source_name != null">
+			and
+			(t.name like trim(#{source_name})
+			or t.name_en like trim(#{source_name})
+			)
+		</if>
+		<if test="userId != null">
+			and exists (select 1 from t_m_role_tresource tr
+			left join t_m_role r on tr.trole_id=r.id
+			left join t_m_user_trole ur on r.id=ur.trole_id ,t_m_user u
+			where t.id = tr.tresource_id and ur.tuser_id=#{userId}
+			)
+		</if>
+		<include refid="sql_orderby" />
+	</select>
+	<!-- 根据id获取相应的资源 -->
+	<select id="getTresourceById" resultMap="Tresource"
+		parameterType="hashmap">
+		<include refid="sql_base_select"></include>
+		and t.id=#{id,jdbcType=VARCHAR}
+	</select>
+	<!-- 新增 -->
+	<insert id="insert"
+		parameterType="com.ratta.suponote.model.system.Tresource">
+		insert into t_m_resource
+		(id,
+		icon,
+		name,
+		remark,
+		seq,
+		url,
+		pid,
+		tresourcetype_id,
+		create_time,
+		create_user,
+		update_time,
+		update_user
+		)
+		values(#{id},#{icon,jdbcType=VARCHAR},#{name},#{remark,jdbcType=VARCHAR},#{seq},#{url,jdbcType=VARCHAR},#{tresource.id,jdbcType=VARCHAR},#{tresourcetype.id},sysdate(),#{create_user},null,null)
+	</insert>
+
+	<!-- 更新 -->
+	<update id="update"
+		parameterType="com.ratta.suponote.model.system.Tresource">
+		update
+		t_m_resource t set
+		t.icon=#{icon,jdbcType=VARCHAR},
+		t.name=#{name},
+		t.remark=#{remark,jdbcType=VARCHAR},
+		t.seq=#{seq},t.url=#{url},
+		t.pid=#{tresource.id,jdbcType=VARCHAR},
+		t.tresourcetype_id=#{tresourcetype.id},
+		t.update_time=sysdate(),
+		t.update_user=#{update_user} where t.id=#{id}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete"
+		parameterType="com.ratta.suponote.model.system.Tresource">
+		delete from t_m_resource where id=#{id,jdbcType=VARCHAR}
+	</delete>
+	<!-- 删除与资源相对应的对应记录 -->
+	<delete id="deleteResRole">
+		delete from t_m_role_tresource where
+		tresource_id=#{id,jdbcType=VARCHAR}
+	</delete>
+	<!-- 保存资源与角色对应关系 -->
+	<insert id="saveRoleResource" parameterType="hashmap">
+		insert into
+		t_m_role_tresource values(#{r_id},#{s_id})
+	</insert>
+	<!-- 根据多个id 查询出符合的资源对象 -->
+	<select id="selectResourceByIds" parameterType="hashmap"
+		resultMap="Tresource">
+		<include refid="sql_base_select" />
+		and t.id in
+		<foreach collection="idss" item="item" index="index" open="("
+			separator="," close=")">
+			${item}
+		</foreach>
+	</select>
+
+	<select id="getTresourceByURL" parameterType="hashmap"
+		resultMap="Tresource">
+		<include refid="sql_base_select" />
+		and trim(t.url) = trim(#{resourceURL})
+	</select>
+
+	<select id="getResourceByRole" parameterType="hashmap"
+		resultMap="Tresource">
+		<include refid="sql_base_select" />
+		and exists(select 1 from t_m_role_tresource tr where
+		t.id=tr.tresource_id and tr.trole_id=#{role_id})
+		<include refid="sql_orderby" />
+	</select>
+
+	<!-- 查询该角色下是否有用户 -->
+	<select id="hasRoleOwnResource" parameterType="hashmap"
+		resultType="long">
+		select count(1) from t_m_role_tresource t
+		where t.tresource_id = #{id}
+		and t.trole_id !='0'
+	</select>
+</mapper>

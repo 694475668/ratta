@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="dictionary">
+	<resultMap type="dictionary_Dictionary" id="dictionary">
+		<id property='id' column='id' />
+		<result property='name' column='name' />
+		<result property='value' column='value' />
+		<result property="value_cn" column="value_cn" />
+		<result property="value_en" column="value_en" />
+		<result property="remark" column="remark" />
+		<result property='op_user' column='op_user' />
+		<result property='op_time' column='op_time' />
+	</resultMap>
+	<!-- 基础查询 -->
+	<sql id="select_base">
+		select t.id,t.name,t.value,t.value_cn,t.value_en,t.remark,
+		u.name op_user,t.op_time
+	</sql>
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="name != null and name !='' ">
+			and t.name like concat('%',#{name},'%')
+		</if>
+		<if test="value != null and value !='' ">
+			and t.value like concat('%',#{value},'%')
+		</if>
+		<if test="value_cn !=null and value_cn !='' ">
+			and t.value_cn like concat('%',trim(#{value_cn}),'%')
+		</if>
+	</sql>
+	<!-- 查询 -->
+	<select id="query" parameterType="hashmap"
+		resultMap="dictionary">
+		<include refid="select_base" />
+		from (
+		select t.* from (
+		select t.* from t_dictionary t
+		where 1=1
+		<include refid="select_param" />
+		limit #{p_begin},#{p_end}
+		)t
+		)t left join t_m_user u on u.username=t.op_user
+		order by t.name,t.value asc
+	</select>
+	<!-- 根据name查询数据字典 -->
+	<select id="queryNoPage" parameterType="string"
+		resultMap="dictionary">
+		select t.value,t.value_cn from t_dictionary t where
+		t.name=#{name} order by t.value asc
+	</select>
+	<!-- 统计 -->
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(1) from t_dictionary t where 1=1
+		<include refid="select_param" />
+	</select>
+	<!-- 添加 -->
+	<insert id="save" parameterType="dictionary_Dictionary">
+		insert into t_dictionary
+		(
+		name,value,value_cn,value_en,op_user,op_time,remark
+		)
+		values
+		(
+		#{name,jdbcType=VARCHAR},
+		#{value,jdbcType=VARCHAR},
+		#{value_cn,jdbcType=VARCHAR},
+		#{value_en,jdbcType=VARCHAR},
+		#{op_user,jdbcType=VARCHAR},
+		sysdate(),
+		#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 修改 -->
+	<update id="update" parameterType="dictionary_Dictionary">
+		update t_dictionary t set
+		remark=#{remark,jdbcType=VARCHAR},
+		t.value_cn=#{value_cn,jdbcType=VARCHAR},
+		t.value_en=#{value_en,jdbcType=VARCHAR},
+		op_user=#{op_user,jdbcType=VARCHAR},
+		op_time=sysdate()
+		where id=#{id}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_dictionary where
+		id=#{id}
+	</delete>
+	<!-- 根据id查询错误码 -->
+	<select id="queryById" parameterType="long"
+		resultMap="dictionary">
+		<include refid="select_base" />
+		from t_dictionary t left join t_m_user u on u.username=t.op_user where
+		t.id = #{id}
+	</select>
+	<!-- 根据参数查询数据字典 -->
+	<select id="queryByPamram" parameterType="hashmap"
+		resultMap="dictionary">
+		<include refid="select_base" />
+		from t_dictionary t left join t_m_user u on u.username=t.op_user where 
+		t.name = #{name} and t.value = #{value} 
+	</select>
+</mapper>

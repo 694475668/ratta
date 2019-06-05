@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="firmwareTask">
+	<resultMap type="firmware_task_line" id="firmwareTask">
+		<id column="id" property="id" />
+		<result column="FIRMWARE_VERSION" property="firmware_version" />
+		<result column="DEPLOY_VERSION" property="deployVersion" />
+		<result column="PERFORM_TIME" property="performTime" />
+		<result column="DEPLOY_USER" property="deployUser" />
+		<result column="UPDATE_STATUS" property="updateStatus" />
+		<result column="EQUIPMENT_NO" property="equipmentno" />
+		<result column="DEPLOY_TIME" property="deployTime" />
+		<result column="FINISH_FLAG" property="finishFlag" />
+		<result column="TYPE" property="type" />
+		<result column="EQUIPMENT_MODEL" property="equipment_type" />
+		<result column="EQUIPMENT_PURPOSE" property="equipment_purpose" />
+		<result column="AREA" property="area" />
+		<result column="CUSTOM" property="custom" />
+		<result column="configuration" property="configuration" />
+		<result column="BATCH_NO" property="batch_no" />
+		<result column="BZCODE" property="bz_code" />
+		<result column="IS_HISTORY" property="isHistory" />
+		<result column="STATUS" property="status" />
+		<result column="REVOKE_USER" property="revokeUser" />
+		<result column="REVOKE_TIME" property="revokeTime" />
+	</resultMap>
+
+
+	<sql id="Base_Column_List">
+		select DISTINCT
+		e.type EQUIPMENT_MODEL,
+		m.EQUIPMENT_NO,
+		(select d.value_cn from t_dictionary d where d.value=m.AREA and
+		d.name='AREA')AREA,
+		(select d.value_cn from t_dictionary d where d.value=m.CUSTOM and
+		d.name='CUSTOM')CUSTOM,
+		(select d.value_cn from t_dictionary d where d.value=m.configuration and
+		d.name='EQUIPMENT_CONFIG')configuration,
+		(select d.value_cn from t_dictionary d where d.value=m.equipment_purpose and
+		d.name='EQUIPMENT_PURPOSE')equipment_purpose,
+		m.BATCH_NO,
+		m.FIRMWARE_VERSION,
+		m.DEPLOY_VERSION,
+		m.PERFORM_TIME,
+		m.DEPLOY_TIME,
+		m.DEPLOY_USER,
+		m.FINISH_FLAG,
+		m.ID,
+		m.TYPE,
+		m.IS_HISTORY,
+		m.STATUS,
+		m.REVOKE_USER,
+		m.REVOKE_TIME
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="equipment_type != null and equipment_type !='' ">
+			and m.EQUIPMENT_MODEL =#{equipment_type}
+		</if>
+		<if test="deployVersion !=null and deployVersion !='' ">
+			and m.DEPLOY_VERSION like concat('%',trim(#{deployVersion}),'%')
+		</if>
+		<if test="batch_no !=null and batch_no !='' ">
+			and m.BATCH_NO like concat('%',trim(#{batch_no}),'%')
+		</if>
+		<if test="finishFlag !=null and finishFlag !='' ">
+			and m.FINISH_FLAG=#{finishFlag}
+		</if>
+		<if test="isHistory !=null and isHistory !='' ">
+			and m.IS_HISTORY=#{isHistory}
+		</if>
+		<if test="beginTime !=null and beginTime !='' ">
+			and date_format(m.DEPLOY_TIME,'%Y-%m-%d') &gt;= #{beginTime}
+		</if>
+		<if test="endTime !=null and endTime !='' ">
+			and date_format(m.DEPLOY_TIME,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</sql>
+
+	<select id="query" resultMap="firmwareTask"
+		parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_m_firmware_task m
+		LEFT JOIN t_m_equiptype e on m.EQUIPMENT_MODEL=e.ID
+		where m.type in ('2','3')
+		<include refid="select_param" />
+		order by
+		m.DEPLOY_TIME desc,m.EQUIPMENT_MODEL asc limit #{p_begin},#{p_end}
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from (
+		<include refid="Base_Column_List" />
+		from t_m_firmware_task m
+		LEFT JOIN t_m_equiptype e on m.EQUIPMENT_MODEL=e.ID
+		where m.type in ('2','3')
+		<include refid="select_param" />
+		)g
+	</select>
+
+	<select id="queryAuditTest" resultMap="firmwareTask"
+		parameterType="hashmap">
+		select
+		s.id,s.EQUIPMENT_NO,s.FIRMWARE_VERSION,t.PERFORM_TIME,s.UPDATE_STATUS
+		from t_m_firmware_task t,t_m_stock s
+		where
+		t.ID = s.TASK_ID and t.TYPE='1' and s.TASK_ID &lt;&gt; '0'
+		and t.FIRMWARE_VERSION = #{firmware_version}
+		order by s.EQUIPMENT_NO desc
+		<if test="p_begin !=null">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+
+	<select id="countAuditTest" parameterType="hashmap"
+		resultType="long">
+		select count(*)
+		from t_m_firmware_task t,t_m_stock s
+		where
+		t.ID = s.TASK_ID and t.TYPE='1' and s.TASK_ID &lt;&gt; '0'
+		and t.FIRMWARE_VERSION = #{firmware_version}
+	</select>
+	<!-- 根据版本号统计审核测试的记录数 -->
+	<select id="countByVersion" parameterType="string"
+		resultType="int">
+		select count(*) from t_m_firmware_task t where t.TYPE='1' and
+		t.FIRMWARE_VERSION=#{version}
+	</select>
+
+
+	<select id="queryById" parameterType="hashmap"
+		resultMap="firmwareTask">
+		<include refid="Base_Column_List" />
+		from t_m_firmware_task m
+		LEFT JOIN t_m_equiptype e on m.EQUIPMENT_MODEL=e.ID where m.id = #{id}
+	</select>
+
+	<!-- 删除 固件版本信息 -->
+	<delete id="delete" parameterType="long">
+		delete from t_m_firmware_task
+		where id=#{id}
+	</delete>
+	<!-- 修改固件版本任务 -->
+	<update id="update" parameterType="hashmap">
+		update t_m_firmware_task t
+		<if test="finish_flag !=null and finish_flag !='' ">
+			set t.finish_flag = #{finish_flag}
+		</if>
+		<if test="is_history !=null and is_history !='' ">
+			set t.is_history = #{is_history}
+		</if>
+		<if test="status !=null and status !='' ">
+			set t.status = #{status},
+			t.revoke_user= #{revokeUser},
+			t.revoke_time=sysdate()
+		</if>
+		where t.id=#{id}
+	</update>
+	<!-- 插入固件任务记录 -->
+	<insert id="insertFirmwareTask"
+		parameterType="firmware_task_line" useGeneratedKeys="true"
+		keyProperty="id">
+		insert into t_m_firmware_task
+		(
+		ID,
+		FIRMWARE_VERSION,
+		DEPLOY_VERSION,
+		FINISH_FLAG,
+		PERFORM_TIME,
+		TYPE,
+		DEPLOY_USER,
+		DEPLOY_TIME,
+		BZCODE,
+		IS_FLASH,
+		IS_HISTORY,
+		AREA,
+		CUSTOM,
+		CONFIGURATION,
+		BATCH_NO,
+		EQUIPMENT_PURPOSE,
+		EQUIPMENT_MODEL,
+		EQUIPMENT_NO
+		)
+		values
+		(
+		#{id,jdbcType=INTEGER},
+		#{firmware_version,jdbcType=VARCHAR},
+		#{deployVersion,jdbcType=VARCHAR},
+		#{finishFlag,jdbcType=VARCHAR},
+		#{performTime,jdbcType=VARCHAR},
+		#{type,jdbcType=VARCHAR},
+		#{deployUser,jdbcType=VARCHAR},
+		sysdate(),
+		#{bz_code,jdbcType=VARCHAR},
+		#{isFlash,jdbcType=VARCHAR},
+		'0',
+		#{area,jdbcType=VARCHAR},
+		#{custom,jdbcType=VARCHAR},
+		#{configuration,jdbcType=VARCHAR},
+		#{batch_no,jdbcType=VARCHAR},
+		#{equipment_purpose,jdbcType=VARCHAR},
+		#{equipment_type,jdbcType=VARCHAR},
+		#{equipmentno,jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 删除终端固件更新任务 -->
+	<delete id="deleteTask" parameterType="hashmap">
+		delete from t_task where
+		equipment_no=#{equipment_no} and task_code=#{task_code}
+	</delete>
+	<!-- 生成id -->
+	<select id="generateId" resultType="long">
+		select ifnull(max(t.id),0)+1
+		from t_m_firmware_task t
+	</select>
+	<!-- 模糊查询 -->
+	<select id="selectByVersion" parameterType="string"
+		resultType="long">
+		select distinct t.id from t_m_firmware_task t where
+		t.is_history='0'
+		and t.FIRMWARE_VERSION like concat('%',#{firmwareVersion},'%')
+	</select>
+</mapper>

@@ -1,0 +1,8 @@
+##### dubbo properties begin ######
+dubboRegistry=zookeeper://127.0.0.1:2181
+dubboHost=127.0.0.1
+dubboPort=23005
+#dubbo\u7248\u672c
+dubboVersion=${project.version}
+##### dubbo properties end #######
+

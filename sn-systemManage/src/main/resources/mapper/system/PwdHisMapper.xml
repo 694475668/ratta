@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="pwdHis">
+	<resultMap type="pwdHis_PwdHis" id="pwdHis">
+		<id property="id" column="id" />
+		<result property="username" column="username" />
+		<result property="pwd" column="pwd" />
+		<result property="op_time" column="op_time" />
+	</resultMap>
+
+	<!-- 查询 -->
+	<select id="query" parameterType="hashmap" resultMap="pwdHis">
+		select t.id,t.username,t.pwd,t.op_time from
+		(select t.* from (
+		select t.* from t_m_pwd_his t where t.username=#{username} order by
+		t.op_time desc
+		)t
+		)t limit 0,#{times}
+	</select>
+
+	<!-- 添加 -->
+	<insert id="save" parameterType="pwdHis_PwdHis">
+		insert into t_m_pwd_his
+		(
+		username,pwd,op_time
+		)
+		values
+		(
+
+		#{username,jdbcType=VARCHAR},
+		#{pwd,jdbcType=VARCHAR},
+		sysdate()
+		)
+	</insert>
+</mapper>

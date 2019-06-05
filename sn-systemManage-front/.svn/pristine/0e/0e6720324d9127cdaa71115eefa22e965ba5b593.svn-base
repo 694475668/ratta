@@ -1,0 +1,11 @@
+###### logback properties begin ####
+logLevel=WARN
+logAdditivity=false
+logRoot=/tmp/sn100/sn-systemManage-front
+###### logback properties end #####
+
+
+logManageTomcat=/home/utmsfront/app/manage-front/apache-tomcat-7.0.72/logs
+catalinaOut=/home/utmsfront/app/manage-front/apache-tomcat-7.0.72/logs/catalina.out
+###### file_server logback #####
+logFileServerTomcat=/home/utmsfront/app/file-server/apache-tomcat-7.0.72/logs

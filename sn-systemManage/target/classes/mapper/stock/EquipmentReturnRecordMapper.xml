@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="equipmentReturnRecord">
+	<resultMap type="equipment_Return_record"
+		id="equipmentReturnRecord">
+		<id column="ID" property="id" />
+		<result column="TYPE" property="type" />
+		<result column="EQUIPMENT_NO" property="equipment_no" />
+		<result column="EXCHANGE_EQUIPMENTNO"
+			property="exchangeEquipmentNo" />
+		<result column="SERIAL_NUMBER" property="serrialNumber" />
+		<result column="RETURN_TIME" property="returnTime" />
+		<result column="BUSINESS_HANDLER" property="businessHandler" />
+		<result column="OP_TIME" property="op_time" />
+		<result column="OP_USER" property="op_user" />
+		<result column="HEALTHY_STATE" property="healthyState" />
+		<result column="REMARK" property="remark" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select
+		t.id,t.equipment_no,t.type,t.exchange_equipmentno,t.serial_number,t.return_time,
+		t.business_handler,
+		t.op_user, t.op_time,
+		(select d.value_cn from t_dictionary d where d.value=t.healthy_state and
+		d.name='EQUIPMENT_HEALTHY_STATE')healthy_state,remark
+	</sql>
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="type !=null and type !='' ">
+			and t.type =#{type}
+		</if>
+		<if test="healthyState !=null and healthyState !='' ">
+			and t.healthy_state =#{healthyState}
+		</if>
+		<if test="equipment_no !=null and equipment_no !='' ">
+			and t.equipment_no like concat('%',trim(#{equipment_no}),'%')
+		</if>
+		<if test="beginTime !=null and beginTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &gt;= #{beginTime}
+		</if>
+		<if test="endTime !=null and endTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</sql>
+
+	<select id="query" resultMap="equipmentReturnRecord"
+		parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_m_return_record t
+		where 1=1
+		<include refid="select_param" />
+		order by t.op_time desc limit #{p_begin},#{p_end}
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_m_return_record t where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<select id="queryById" parameterType="long"
+		resultMap="equipmentReturnRecord">
+		<include refid="Base_Column_List" />
+		from t_m_return_record t where t.id=#{id}
+	</select>
+	<!-- 通过设备号查询退换货记录 -->
+	<select id="queryByEquipmentNo" parameterType="string"
+		resultMap="equipmentReturnRecord">
+		<include refid="Base_Column_List" />
+		from t_m_return_record t where t.equipment_no=#{equipmentNo}
+	</select>
+	<!-- 添加 -->
+	<insert id="save" parameterType="equipment_Return_record">
+		insert into t_m_return_record
+		(
+		EQUIPMENT_NO,
+		TYPE,
+		EXCHANGE_EQUIPMENTNO,
+		SERIAL_NUMBER,
+		RETURN_TIME,
+		BUSINESS_HANDLER,
+		OP_USER,
+		OP_TIME,
+		HEALTHY_STATE,
+		REMARK
+		)
+		values
+		(
+		#{equipment_no,jdbcType=VARCHAR},
+		#{type,jdbcType=VARCHAR},
+		#{exchangeEquipmentNo,jdbcType=VARCHAR},
+		#{serrialNumber,jdbcType=VARCHAR},
+		#{returnTime,jdbcType=VARCHAR},
+		#{businessHandler,jdbcType=VARCHAR},
+		#{op_user,jdbcType=VARCHAR},
+		sysdate(),
+		#{healthyState,jdbcType=VARCHAR},
+		#{remark,jdbcType=VARCHAR}
+		)
+	</insert>
+
+</mapper>

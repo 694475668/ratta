@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="stock">
+	<resultMap type="stock_Stock" id="stocks">
+		<id column="id" property="id" />
+		<result column="type" property="equipment_model" />
+		<result column="EQUIPMENT_NO" property="equipment_no" />
+		<result column="FIRMWARE_VERSION" property="firmware_version" />
+		<result column="EQUIPMENT_PURPOSE" property="equipment_purpose" />
+		<result column="FLAG" property="flag" />
+		<result column="STATE" property="state" />
+		<result column="STATUS" property="status" />
+		<result column="BATCH_NO" property="batch_no" />
+		<result column="TASK_ID" property="task_id" />
+		<result column="INOUT_ID" property="inout_id" />
+		<result column="deploy_version"
+			property="releaseFirmwareVersion" />
+		<result column="UPDATE_STATUS" property="update_status" />
+		<result column="OP_TIME" property="op_time" />
+		<result column="HEALTHY_STATE" property="healthyState" />
+		<result column="REMARK" property="remark" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select distinct t.id,
+		d.type,t.equipment_no,t.firmware_version,t.INOUT_ID,t.flag,t.state,
+		e.status,t.batch_no, t.task_id, f.deploy_version,
+		(select d.value_cn from t_dictionary d where d.value=t.update_status and
+		d.name='EQUIP_FIRM_UPDATE_STATUS')update_status,t.op_time,
+		(select d.value_cn from t_dictionary d where d.value=t.healthy_state and
+		d.name='EQUIPMENT_HEALTHY_STATE')healthy_state,t.remark
+	</sql>
+	<sql id="Base_Column">
+		select distinct t.id,(select d.value_cn from t_dictionary d where d.value=s.EQUIPMENT_PURPOSE and
+		d.name='EQUIPMENT_PURPOSE')EQUIPMENT_PURPOSE,
+		d.type,t.equipment_no,t.firmware_version,t.INOUT_ID,t.flag,t.state,t.batch_no,
+		t.task_id,
+		(select d.value_cn from t_dictionary d where d.value=t.update_status and
+		d.name='EQUIP_FIRM_UPDATE_STATUS')update_status,t.op_time,
+		t.healthy_state,t.remark
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="equipment_model != null and equipment_model !='' ">
+			and t.equipment_model =#{equipment_model}
+		</if>
+		<if test="batch_no !=null and batch_no !='' ">
+			and t.batch_no like concat('%',trim(#{batch_no}),'%')
+		</if>
+		<if test="firmware_version !=null and firmware_version !='' ">
+			and t.firmware_version like concat('%',trim(#{firmware_version}),'%')
+		</if>
+		<if test="inout_id !=null and inout_id !='' ">
+			and t.inout_id =#{inout_id}
+		</if>
+		<if test="flag !=null and flag !='' ">
+			and t.flag =#{flag}
+		</if>
+		<if test="healthyState !=null and healthyState !='' ">
+			and t.healthy_state =#{healthyState}
+		</if>
+		<if test="update_status !=null and update_status !='' ">
+			and t.update_status =#{update_status}
+		</if>
+		<if test="equipment_no !=null and equipment_no !='' ">
+			and t.equipment_no like concat('%',trim(#{equipment_no}),'%')
+		</if>
+		<if test="beginTime !=null and beginTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &gt;= #{beginTime}
+		</if>
+		<if test="endTime !=null and endTime !='' ">
+			and date_format(t.op_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</sql>
+
+	<select id="query" resultMap="stocks" parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_m_stock t
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		left join t_user_equipment e on t.EQUIPMENT_NO=e.EQUIPMENT_NUMBER
+		left join t_m_firmware_task f on f.id=t.task_id
+		where 1=1
+		<include refid="select_param" />
+		order by d.type,t.equipment_no asc limit #{p_begin},#{p_end}
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_m_stock t
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		left join
+		(select f.id from t_m_firmware_task f where 1=1
+		<if test="deployVersion !=null and deployVersion !='' ">
+			and f.deploy_version like concat('%',trim(#{deployVersion}),'%')
+		</if>
+		)f on f.id=t.task_id
+		where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<!-- 不分页获取库存数据 -->
+	<select id="querySumAll" parameterType="hashmap"
+		resultMap="stocks">
+		<include refid="Base_Column" />
+		from t_m_stock t
+		left join t_m_inout s on t.INOUT_ID=s.ID
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		where 1=1
+		<include refid="select_param" />
+	</select>
+	<!-- 查询未发布固件任务的设备 -->
+	<select id="queryStockNotRelease" parameterType="hashmap"
+		resultMap="stocks">
+		<include refid="Base_Column" />
+		from t_m_stock t
+		right join (select m.ID,m.EQUIPMENT_PURPOSE from t_m_inout m 
+		where 1=1 
+		<if test="equipment_purpose !=null and equipment_purpose !='' ">
+			and m.EQUIPMENT_PURPOSE=#{equipment_purpose}
+		</if>
+		) s ON t.INOUT_ID = s.ID
+		left join t_m_equiptype d ON t.EQUIPMENT_MODEL = d.id
+		where 1=1 
+		<if test="batch_no !=null and batch_no !='' ">
+			and t.batch_no = #{batch_no}
+		</if>
+		<if test="equipment_model !=null and equipment_model !='' ">
+			and t.EQUIPMENT_MODEL = #{equipment_model}
+		</if>
+		<if test="list !=null and list !='' ">
+			and t.equipment_no not in
+			<foreach collection="list" index="index" item="item" open="("
+				separator="," close=")">
+				#{item.equipmentno}
+			</foreach>
+		</if>
+		<if test="equipment_number !=null and equipment_number !='' ">
+			and t.equipment_no like concat('%',trim(#{equipment_number}),'%')
+		</if>
+		order by t.equipment_no ASC limit #{p_begin},#{p_end}
+	</select>
+	<!-- 统计未发布固件任务的设备 -->
+	<select id="countStockNotRelease" parameterType="hashmap"
+		resultType="long">
+		select count(*) from t_m_stock t
+		right join (select m.ID,m.EQUIPMENT_PURPOSE from t_m_inout m 
+		where 1=1 
+		<if test="equipment_purpose !=null and equipment_purpose !='' ">
+			and m.EQUIPMENT_PURPOSE=#{equipment_purpose}
+		</if>
+		) s ON t.INOUT_ID = s.ID
+		left join t_m_equiptype d ON t.EQUIPMENT_MODEL = d.id
+		where 1=1 
+		<if test="batch_no !=null and batch_no !='' ">
+			and t.batch_no = #{batch_no}
+		</if>
+		<if test="equipment_model !=null and equipment_model !='' ">
+			and t.EQUIPMENT_MODEL = #{equipment_model}
+		</if>
+		<if test="list !=null and list !='' ">
+			and t.equipment_no not in
+			<foreach collection="list" index="index" item="item" open="("
+				separator="," close=")">
+				#{item.equipmentno}
+			</foreach>
+		</if>
+		<if test="equipment_number !=null and equipment_number !='' ">
+			and t.equipment_no like concat('%',trim(#{equipment_number}),'%')
+		</if>
+	</select>
+	<!-- 通过ID查询库存记录 -->
+	<select id="queryById" parameterType="hashmap"
+		resultMap="stocks">
+		<include refid="Base_Column" />
+		from t_m_stock t
+		left join t_m_inout s on t.INOUT_ID=s.ID
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		where t.id = #{id}
+	</select>
+	<!-- 通过出入库ID查询任务ID记录 -->
+	<select id="queryTaskIdByBatchno" parameterType="string"
+		resultType="string">
+		select distinct t.task_id
+		from t_m_stock t
+		where t.batch_no = #{batchNo} and t.TASK_ID &lt;&gt; 0
+	</select>
+	<!-- 通过任务ID查询设备号记录 -->
+	<select id="queryEquipmentNoByTaskId" parameterType="long"
+		resultType="string">
+		select t.equipment_no
+		from t_m_stock t
+		where t.task_id = #{taskId}
+	</select>
+	<!-- 通过出入库ID查询设备号记录 -->
+	<select id="queryEquipmentByInOutId" parameterType="long"
+		resultMap="stocks">
+		<include refid="Base_Column" />
+		from t_m_stock t
+		left join t_m_inout s on t.INOUT_ID=s.ID
+		left join t_m_equiptype d on t.EQUIPMENT_MODEL=d.id
+		where t.inout_id = #{inoutId}
+	</select>
+	<!-- 通过出入库ID查询任务ID -->
+	<select id="queryTaskIdByInOutId" parameterType="long"
+		resultType="long">
+		select distinct t.task_id from t_m_stock t
+		where t.inout_id = #{inoutId}
+	</select>
+	<!-- 通过设备号查询任务ID记录 -->
+	<select id="queryByEquipNo" parameterType="string" resultMap="stocks">
+		select distinct t.id,s.EQUIPMENT_PURPOSE,t.EQUIPMENT_MODEL type,
+		t.equipment_no,t.firmware_version,t.INOUT_ID,t.flag,t.state,t.batch_no,
+		t.task_id,t.update_status,t.op_time,t.healthy_state,t.remark
+		from t_m_stock t
+		left join t_m_inout s on t.INOUT_ID=s.ID
+		where t.equipment_no = #{equipmentNo}
+	</select>
+
+
+	<!-- 添加 -->
+	<insert id="save" parameterType="stock_Stock">
+		insert into t_m_stock
+		(
+		EQUIPMENT_MODEL,EQUIPMENT_NO,FIRMWARE_VERSION,FLAG,STATE,INOUT_ID,BATCH_NO,
+		TASK_ID,UPDATE_STATUS,op_time,HEALTHY_STATE
+		)
+		values
+		(
+		#{equipment_model,jdbcType=INTEGER},
+		#{equipment_no,jdbcType=VARCHAR},
+		#{firmware_version,jdbcType=VARCHAR},
+		#{flag,jdbcType=VARCHAR},
+		#{state,jdbcType=VARCHAR},
+		#{inout_id,jdbcType=INTEGER},
+		#{batch_no,jdbcType=VARCHAR},
+		0,
+		#{update_status,jdbcType=VARCHAR},
+		sysdate(),
+		#{healthyState,jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 更新 -->
+	<update id="update" parameterType="stock_Stock">
+		update t_m_stock t set
+		t.flag=#{flag},
+		t.inout_id=#{inout_id},
+		<if test="releaseFirmwareVersion !=null and releaseFirmwareVersion !='' ">
+			t.FIRMWARE_VERSION=#{releaseFirmwareVersion}, 
+		</if>
+		 t.op_time=sysdate() 
+		where t.id=#{id}
+	</update>
+	<!-- 根据设备号更新设备的健康状态、出入库标识、备注、激活状态 -->
+	<update id="updateByEquiNo" parameterType="stock_Stock">
+		update t_m_stock t set
+		t.flag=#{flag},
+		t.state=#{state},
+		t.inout_id=#{inout_id},
+		t.task_id=#{task_id},
+		t.update_status=#{update_status},
+		t.remark=#{remark},
+		t.healthy_state=#{healthyState}
+		where t.equipment_no=#{equipment_no}
+	</update>
+
+	<!-- 根据设备号更新设备健康状态信息 -->
+	<update id="updateHealthyState" parameterType="hashmap">
+		update t_m_stock t set t.healthy_state=#{healthyState}
+		<if test='healthyState =="0"'>
+			,t.remark=''
+		</if>
+		where t.equipment_no=#{equipment_no}
+	</update>
+	<!-- 更新固件更新任务ID -->
+	<update id="updateTaskId" parameterType="hashmap">
+		update t_m_stock t set
+		t.task_id=#{task_id}
+		where t.inout_id=#{inout_id}
+	</update>
+	<!-- 更新设备固件更新状态 -->
+	<update id="updateStatusByInoutId" parameterType="hashmap">
+		update
+		t_m_stock t set t.UPDATE_STATUS=#{update_status}
+		where t.inout_id=#{inout_id}
+	</update>
+	<!-- 根据设备号更新固件更新任务ID -->
+	<update id="updateTaskIdByEquiNo" parameterType="hashmap">
+		update t_m_stock
+		t set t.task_id=#{task_id},t.UPDATE_STATUS=#{update_status}
+		where t.equipment_no=#{equipment_no}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_m_stock where
+		inout_id=#{inoutId}
+	</delete>
+	<!-- 判断设备是否合法 -->
+	<select id="isLagal" parameterType="string" resultType="int">
+		select count(*) from t_m_stock t
+		where t.equipment_no = #{equipmentNo}
+	</select>
+
+</mapper>

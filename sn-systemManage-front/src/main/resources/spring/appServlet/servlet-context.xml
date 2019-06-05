@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:c="http://www.springframework.org/schema/c" xmlns:cache="http://www.springframework.org/schema/cache" xmlns:context="http://www.springframework.org/schema/context" xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jee="http://www.springframework.org/schema/jee" xmlns:lang="http://www.springframework.org/schema/lang" xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p" xmlns:task="http://www.springframework.org/schema/task" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		
+		<context:component-scan base-package="com.ratta.spnote.controller" />
+		<context:component-scan base-package="com.ratta.spnote.aspect"/>
+		
+		<!-- 开启 spring aop 注解  -->
+		<aop:aspectj-autoproxy />
+
+		
+		<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean id="fastJsonHttpMessageConverter" class="com.ratta.spnote.converter.FastJsonHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/html;charset=UTF-8</value><!-- 避免IE出现下载JSON文件的情况 -->  
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver" p:prefix="/" p:suffix=".jsp" />
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"> 
+<!-- 		<bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver"> -->
+		<property name="defaultEncoding"> <value>UTF-8</value> </property> 
+		<property name="maxUploadSize"> <value>536870912</value> </property><!-- 最大512M --> 
+		<property name="maxInMemorySize"><value>4096</value> </property> 
+	</bean>
+	
+	<!-- 多语言版本 -->
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+	  <property name="basename" value="message"/>
+	  <property name="useCodeAsDefaultMessage" value="true"/>
+	</bean>
+	
+<!-- 	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver"> -->
+<!-- 			  <property name="defaultLocale" value="zh_CN"/> -->
+<!-- 	</bean> -->
+	<!-- 自定义指定国际化语言 -->
+	<bean id="localeResolver" class="com.ratta.spnote.interceptors.DefaultLanguage"/>
+	
+	<!-- 拦截器 -->
+	<mvc:interceptors>
+	<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"/>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<bean class="com.ratta.spnote.interceptors.SecurityInterceptor">
+				<!-- 不需要权限验证的地址 -->
+				<property name="excludeUrls">
+					<list>
+					
+						<value>/resourceController/tree</value><!-- 首页左侧功能菜单 -->
+						<value>/resourceController/allTree</value><!-- 角色访问资源下拉树 -->
+						<value>/resourceController/add</value><!-- 添加资源 -->
+						<value>/resourceController/edit</value><!-- 编辑资源 -->
+						<value>/userController/reg</value><!-- 用户注册 -->
+						<value>/userController/login</value><!-- 用户登录 -->
+						<value>/userController/loginCombobox</value><!-- 用户登录里面的autocomplete功能 -->
+						<value>/userController/loginCombogrid</value><!-- 用户登录里面的combogrid功能 -->
+						<value>/userController/logout</value><!-- 注销登录 -->
+						<value>/userController/editCurrentUserPwdPage</value><!--  用户修改自己的密码页面-->
+						<value>/userController/editCurrentUserPwd</value><!-- 用户修改自己的密码 -->
+						<value>/userController/currentUserRolePage</value><!-- 查看自己的角色页面 -->
+						<value>/userController/currentUserResourcePage</value><!-- 查看自己的权限页面 -->
+						<value>/userController/add</value><!-- 添加用户 -->
+						<value>/userController/edit</value><!-- 编辑用户 -->
+						<value>/userController/grant</value><!-- 用户授权 -->
+						<value>/userController/editPwd</value><!-- 用户修改密码 -->
+						<value>/roleController/tree</value><!-- 用户访问角色树(只能看到自己拥有的角色) -->
+						<value>/roleController/allTree</value><!-- 用户访问角色树 -->
+						<value>/roleController/add</value><!-- 添加角色 -->
+						<value>/roleController/edit</value><!-- 编辑角色 -->
+						<value>/roleController/grant</value><!-- 角色授权 -->
+						<value>/captchaController/createImage</value><!-- 生成验证码图片 -->
+						<value>/captchaController/code</value><!-- 验证验证码 -->
+ 						<value>/global/change</value><!--多语言 -->
+						<value>/commonController/upload</value><!-- 图片上传 -->
+						<value>/systemParaDetailController/addDetail</value><!-- 添加系统参数详情 -->
+						<value>/systemParaDetailController/editDetail</value><!-- 修改系统参数详情 -->
+						<value>/errorCodeController/add</value><!-- 添加错误码 -->
+						<value>/errorCodeController/edit</value><!-- 修改错误码 -->
+						<value>/dictionaryController/queryDictionary</value><!-- 查询数据字典 -->
+						<value>/dictionaryController/add</value><!-- 添加数据字典 -->
+						<value>/equipTypeController/edit</value><!-- 修改设备型号-->
+					    <value>/equipTypeController/add</value><!-- 添加设备型号 -->
+					    <value>/equipTypeController/queryNoPage</value><!-- 不分页查询设备型号 -->
+					    <value>/equipTypeController/queryById</value><!-- 根据ID查询设备型号 -->
+					    <value>/dealersController/queryNoPage</value><!-- 不分页查询经销商-->
+					    <value>/dealersController/queryDearlerById</value><!-- 根据ID查询经销商信息-->
+						<value>/dictionaryController/edit</value><!-- 修改数据字典-->
+						<value>/scheduleTaskController/quartz</value><!-- 调度任务克隆表达式配置 -->
+						<value>/scheduleTaskController/getQuartz</value><!-- 根据id获取 -->
+						<value>/scheduleTaskController/editSchedule</value><!-- 修改调度任务-->
+						<value>/scheduleTaskController/logPage</value><!-- 调度任务查看日志 -->
+						<value>/scheduleTaskController/dataGridDetail</value>
+						<value>/roleController/treeGrid</value> <!--  角色表格 -->
+						<value>/dealersController/add</value><!-- 添加经销商 -->
+						<value>/dealersController/edit</value><!-- 编辑经销商 -->
+						<value>/scheduleTaskController/getQuartz</value>	<!-- 获取任务 -->
+						<value>/scheduleTaskController/quartz</value>   <!-- 调度克隆表达式 -->      
+						<value>/scheduleTaskController/logPage</value><!--  显示日志 -->
+						<value>/scheduleTaskController/dataGridDetail</value><!--  显示日志详情 -->
+						<value>/systemParaDetailController/dataGridDetail</value><!-- 系统参数详情列表 -->
+						<value>/systemParaDetailController/queryReference</value><!-- 获取详情 -->
+						<value>/snuserController/editAccount</value><!-- 修改手机号 -->
+						<value>/snuserController/editEmail</value><!-- 修改邮箱 -->
+						<value>/snuserController/userEquipment</value><!-- 云盘用户设备列表 -->
+						<value>/inOutStockController/in</value><!-- 设备入库-->
+						<value>/inOutStockController/queryEquipmentPurpose</value><!-- 根据批次号查询设备配置-->
+						<value>/inOutStockController/out</value><!-- 设备出库-->
+						<value>/inOutStockController/queryBatchNo</value><!-- 查询批次号-->
+						<value>/inOutStockController/import</value><!-- 设备导入-->
+						<value>/inOutStockController/batchOut</value><!-- 设备出库导入-->
+						<value>/stockController/dataGridNotRelease</value><!-- 查询没有固件发布的设备-->
+						<value>/stockController/return</value><!-- 设备退货-->
+						<value>/stockController/exchange</value><!-- 设备换货-->
+						<value>/stockController/healthyState</value><!-- 修改健康状态-->
+						<value>/firmwareController/firmwareInfoLine</value><!-- 固件版本信息子类-->
+						<value>/firmwareController/commitAudit</value><!-- 审核固件-->
+						<value>/firmwareController/queryNoPage</value><!-- 查询审核通过的固件记录-->
+						<value>/firmwareEquipController/dataGrid</value><!-- 根据版本查询设备型号-->
+						<value>/firmwareEquipController/updateFirmEquip</value><!-- 修改固件绑定的设备型号-->
+						<value>/firmwareEquipController/queryNoPage</value><!--查询固件相对应的设备型号-->
+						<value>/firmDeployTaskController/quartz</value><!-- 固件更新发布调度任务-->
+						<value>/firmDeployTaskController/flash</value><!-- 固件刷机-->
+						<value>/firmwareController/quartz</value><!-- 固件更新审核测试调度任务-->
+						<value>/firmwareController/uploadFirmware</value><!-- 固件上传-->
+						<value>/firmwareController/dataGridAuditTest</value><!-- 固件审核测试列表-->
+						<value>/firmwareFixPointController/add</value><!-- 固件修复点添加-->
+					    <value>/firmwareFixPointController/edit</value><!-- 固件修复点修改-->
+					    <value>/equipmentLogController/remark</value><!-- 设备日志添加备注-->
+					    <value>/equipmentLogController/passed</value><!-- 设备日志审阅-->
+					    <value>/equipmentLogController/updateIsDownload</value><!-- 下载完成后更新掉下载状态-->
+					    <value>/feedbackProblemTypeController/add</value><!-- 反馈问题类型添加-->
+					    <value>/feedbackProblemTypeController/update</value><!-- 反馈问题类型修改-->
+					    <value>/feedbackProblemTypeController/queryValueOne</value><!-- 查询第一级问题类型-->
+					    <value>/feedbackProblemTypeController/queryValueTwo</value><!-- 查询第二级问题类型-->
+					    <value>/feedbackProblemTypeController/queryValueThree</value><!-- 查询第三级问题类型-->
+					    <value>/appFixPointController/add</value><!-- app修复点添加-->
+					    <value>/appFixPointController/edit</value><!-- app修复点修改-->
+					    <value>/appVersionController/queryAllAppVersion</value><!-- app版本查询app名称列表-->
+					    <value>/appVersionController/queryVersionByAppName</value><!-- app版本查询app版本列表-->
+					    <value>/appVersionController/upload</value><!-- app版本上传-->
+					    <value>/appVersionController/add</value><!-- app版本添加-->
+					    <value>/appVersionController/deleteFile</value><!-- app版本删除临时保存文件-->
+					    <value>/appVersionController/auditing</value><!-- app版本审核-->
+					    <value>/appVersionController/gray</value><!-- app版本灰度-->
+					</list>
+				</property>
+			</bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+ 	<context:annotation-config />  
+    <!-- <mvc:annotation-driven /> -->
+    
+    <!-- 改写调度任务的配置(更简单了 job 可以spring 注入) -->
+ <bean id="jobFactory" class="com.ratta.spnote.schedule.JobFactory"/>   
+ <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">  
+        <property name="jobFactory" ref="jobFactory"></property>  
+ </bean>  
+ <bean id="triggerJob" class="com.ratta.spnote.schedule.JobTrigger" init-method="run" lazy-init="false"/>
+  
+</beans> 

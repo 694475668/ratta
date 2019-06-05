@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="userEquipment">
+	<resultMap type="sn_User_Equip" id="userEquipment">
+		<id column='id' property='id' />
+		<result column='equipment_number' property='equipment_number' />
+		<result column='name' property='name' />
+		<result column='status' property='status' />
+		<result column='online' property='online_status' />
+		<result column='create_time' property='create_time' />
+		<result column='telephone' property='telephone' />
+		<result column='email' property='email' />
+	</resultMap>
+
+	<sql id="sql_select_base">
+		select distinct t.equipment_number,t.name,t.status,t.online,t.create_time,s.TELEPHONE,s.EMAIL
+	</sql>
+	<!-- 基本界面的查询条件 -->
+	<sql id="sql_select_params">
+		<if test="equipment_number != null and equipment_number !='' ">
+			and t.equipment_number like concat(concat('%',#{equipment_number}),'%')
+		</if>
+		<if test="email != null and email !='' ">
+			and s.EMAIL like concat(concat('%',#{email}),'%')
+		</if>
+		<if test="telephone != null and telephone !='' ">
+			and s.TELEPHONE like concat(concat('%',#{telephone}),'%')
+		</if>
+	</sql>
+
+	<!-- 获取用户设备列表 -->
+	<select id="getAllUserEquipment" resultMap="userEquipment" parameterType="hashmap">
+		<include refid="sql_select_base" />
+		from t_user_equipment t left join t_user s on t.USER_ID = s.USER_ID
+		where 1=1
+		<include refid="sql_select_params" />
+		order by t.equipment_number desc limit #{p_begin},#{p_end}
+	</select>
+
+	<!-- 统计用户设备列表 -->
+	<select id="countAllUserEquipment" resultType="long" parameterType="hashmap">
+		select count(*) from t_user_equipment t left join t_user s on t.USER_ID = s.USER_ID
+		where 1=1
+		<include refid="sql_select_params" />
+	</select>
+
+	<select id="getUserEquipmentById" resultMap="userEquipment" parameterType="INTEGER">
+		select distinct t.equipment_number,t.name,t.status,t.online,t.create_time  
+		from t_user_equipment t where t.id = #{id}
+	</select>
+	
+	<select id="getUserEquipmentByUserId" resultMap="userEquipment" parameterType="INTEGER">
+		select distinct t.equipment_number,t.name,t.status,t.online,t.create_time  
+		from t_user_equipment t where t.USER_ID = #{userId}
+	</select>
+
+</mapper>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="appVersion">
+	<resultMap id="appVersion" type="appVersion">
+		<id column="id" property="id" />
+		<result column="app_name" property="appName" />
+		<result column="file_name" property="fileName" />
+		<result column="app_version" property="appVersion" />
+		<result column="md5" property="md5" />
+		<result column="app_environment" property="appEnvironment" />
+		<result column="package_name" property="packageName" />
+		<result column="url" property="url" />
+		<result column="update_flag" property="updateFlag" />
+		<result column="version_no" property="versionNo" />
+		<result column="deploy_flag" property="deployFlag" />
+		<result column="auditing_flag" property="auditingFlag" />
+		<result column="op_user" property="opUser" />
+		<result column="op_time" property="opTime" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+	   select t.id,t.file_name,t.app_name,t.app_version,t.md5,t.app_environment,t.package_name,t.url,t.update_flag,t.auditing_flag,
+	   t.version_no,t.deploy_flag,t.op_user,t.op_time
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="appName != null and appName !='' ">
+			and t.app_name like concat('%',#{appName},'%')
+		</if>
+		<if test="appVersion !=null and appVersion !='' ">
+			and t.app_version like concat('%',trim(#{appVersion}),'%')
+		</if>
+		<if test="versionNo !=null and versionNo !='' ">
+			and t.version_no = #{versionNo}
+		</if>
+		<if test="updateFlag !=null and updateFlag !='' ">
+			and t.update_flag = #{updateFlag}
+		</if>
+		<if test="auditingFlag !=null and auditingFlag !='' ">
+			and t.auditing_flag = #{auditingFlag}
+		</if>
+		<if test="deployFlag !=null and deployFlag !='' ">
+			and t.deploy_flag = #{deployFlag}
+		</if>
+		<if test="appEnvironment !=null and appEnvironment !='' ">
+			and t.app_environment like concat('%',trim(#{appEnvironment}),'%')
+		</if>
+	</sql>
+
+	<select id="query" resultMap="appVersion" parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		FROM t_app_version t 
+		where 1=1
+		<include refid="select_param" />
+		order by t.app_name,t.op_time asc 
+		<if test="p_begin !=null and p_begin !='' ">
+			limit #{p_begin},#{p_end}
+		</if>
+		
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="java.lang.Long">
+		select count(*) from t_app_version t 
+		where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<select id="queryById" parameterType="INTEGER" resultMap="appVersion">
+		<include refid="Base_Column_List" />
+		from t_app_version t
+		where id = #{id}
+	</select>
+	
+	<delete id="delete" parameterType="INTEGER">
+	    delete from t_app_version where id = #{id}
+	</delete>
+	
+	<update id="updateDeployFlagById" parameterType="hashmap">
+	    update t_app_version t set t.deploy_flag = #{deployFlag} where t.id = #{id}
+	</update>
+	
+	<update id="updateAuditingFlag" parameterType="appVersion">
+	    update t_app_version t set t.auditing_flag = #{auditingFlag} where t.id = #{id}
+	</update>
+	
+	<select id="queryAllAppVersion"  resultMap="appVersion">
+		select distinct t.app_name from t_app_version t
+	</select>
+	
+	<insert id="save"  parameterType="appVersion">
+		insert into t_app_version (file_name,app_name,app_version,md5,app_environment,package_name,url,update_flag,version_no,deploy_flag,auditing_flag,op_user,op_time) 
+		values
+		(#{fileName},#{appName},#{appVersion},#{md5},#{appEnvironment},#{packageName},#{url},#{updateFlag},#{versionNo},'1','1',#{opUser},sysdate())
+	</insert>
+	
+	<select id="queryVersionByAppName"  parameterType="string" resultMap="appVersion">
+		select distinct t.app_version from t_app_version t where t.app_name=#{appName}
+	</select>
+</mapper>

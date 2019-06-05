@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="errorcode">
+	<resultMap type="errorcode_ErrorCode" id="errorCode">
+		<id property='code' column='code' />
+		<result property='remark' column='remark' />
+		<result property='desc' column='cn' />
+		<result property="desc_en" column="en" />
+		<result property='op_user' column='op_user' />
+		<result property='op_time' column='op_time' />
+	</resultMap>
+	<!-- 基础查询 -->
+	<sql id="select_base">
+		select t.code,t.remark,t.cn,t.en,
+		u.name op_user,t.op_time
+	</sql>
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="code != null and code !='' ">
+			and t.code like concat('%',#{code},'%')
+		</if>
+		<if test="desc !=null and desc !='' ">
+			and t.cn like concat('%',trim(#{desc}),'%')
+		</if>
+	</sql>
+	<!-- 查询 -->
+	<select id="query" parameterType="hashmap" resultMap="errorCode">
+		<include refid="select_base" />
+		from (
+		select t.* from (
+		select t.* from t_errorcode t
+		where 1=1
+		<include refid="select_param" />
+		limit #{p_begin},#{p_end}
+		)t
+		)t left join t_m_user u on u.username=t.op_user
+		order by t.code asc
+	</select>
+	<!-- 统计 -->
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(1) from t_errorcode t where 1=1
+		<include refid="select_param" />
+	</select>
+	<!-- 添加 (desc 加引号是因为用的关键字) -->
+	<insert id="save" parameterType="errorcode_ErrorCode">
+		insert into t_errorcode
+		(
+		code,remark,cn,op_user,op_time,en
+		)
+		values
+		(
+		#{code,jdbcType=VARCHAR},
+		#{remark,jdbcType=VARCHAR},
+		#{desc,jdbcType=VARCHAR},
+		#{op_user,jdbcType=VARCHAR},
+		sysdate(),
+		#{desc_en,jdbcType=VARCHAR}
+		)
+	</insert>
+	<update id="update" parameterType="errorcode_ErrorCode">
+		update t_errorcode t set
+		cn=#{desc,jdbcType=VARCHAR},
+		remark=#{remark,jdbcType=VARCHAR},
+		op_user=#{op_user,jdbcType=VARCHAR},
+		op_time=sysdate(),
+		t.en=#{desc_en,jdbcType=VARCHAR}
+		where code=#{code}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="string">
+		delete from t_errorcode where
+		code=#{code}
+	</delete>
+	<!-- 根据id查询错误码 -->
+	<select id="queryById" parameterType="string"
+		resultMap="errorCode">
+		<include refid="select_base" />
+		from t_errorcode t left join t_m_user u on u.username=t.op_user where
+		t.code =#{code}
+	</select>
+</mapper>

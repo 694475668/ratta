@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="dealers">
+	<resultMap id="dealers" type="dealers">
+		<id column="id" property="id" />
+		<result column="dealers_name" property="dealersName" />
+		<result column="dealers_type" property="dealersType" />
+		<result column="contact" property="contact" />
+		<result column="phone" property="phone" />
+		<result column="address" property="address" />
+		<result column="application_time" property="applicationTime" />
+		<result column="salesman" property="salesman" />
+		<result column="remark" property="remark" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, dealers_name, 
+		dealers_type,
+		contact, phone, address,
+		date_format(application_time,'%Y-%m-%d')application_time, salesman,
+		remark
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="dealersName != null and dealersName !='' ">
+			and dealers_name like concat('%',#{dealersName},'%')
+		</if>
+		<if test="phone !=null and phone !='' ">
+			and phone like concat('%',trim(#{phone}),'%')
+		</if>
+		<if test="contact !=null and contact !='' ">
+			and contact like concat('%',trim(#{contact}),'%')
+		</if>
+		<if test="dealersType !=null and dealersType !='' ">
+			and dealers_type = #{dealersType}
+		</if>
+		<if test="beginTime !=null and beginTime !='' ">
+			and date_format(application_time,'%Y-%m-%d') &gt;= #{beginTime}
+		</if>
+		<if test="endTime !=null and endTime !='' ">
+			and date_format(application_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</sql>
+
+	<select id="query" resultMap="dealers" parameterType="hashmap">
+		select
+		<include refid="Base_Column_List" />
+		from t_m_dealers
+		where 1=1
+		<include refid="select_param" />
+		order by dealers_name asc limit #{p_begin},#{p_end}
+	</select>
+
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from t_m_dealers
+		where id = #{id}
+	</delete>
+
+	<insert id="insert" parameterType="dealers">
+		insert into t_m_dealers (dealers_name,dealers_type,contact,
+		phone, address, application_time,
+		salesman, remark)
+		values (#{dealersName},#{dealersType},#{contact},
+		#{phone}, #{address}, #{applicationTime},
+		#{salesman}, #{remark})
+	</insert>
+
+	<select id="count" parameterType="hashmap"
+		resultType="java.lang.Long">
+		select count(*) from t_m_dealers
+		where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<select id="queryById" parameterType="hashmap"
+		resultMap="dealers">
+		select
+		<include refid="Base_Column_List" />
+		from t_m_dealers
+		where id = #{id}
+	</select>
+
+	<!-- 根据名称查询经销商信息 -->
+	<select id="queryByDealersName" parameterType="string"
+		resultMap="dealers">
+		select
+		<include refid="Base_Column_List" />
+		from t_m_dealers
+		where dealers_name = #{dealersName}
+	</select>
+
+	<!-- 不分页获取经销商数据 -->
+	<select id="querySumAll" parameterType="hashmap"
+		resultMap="dealers">
+		select
+		<include refid="Base_Column_List" />
+		from t_m_dealers where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<update id="update" parameterType="dealers">
+		update t_m_dealers set 
+		dealers_name = #{dealersName},
+		dealers_type = #{dealersType},
+		contact = #{contact},
+		phone = #{phone},
+		address = #{address},
+		application_time = #{applicationTime},
+		remark = #{remark} 
+		where id = #{id}
+	</update>
+</mapper>

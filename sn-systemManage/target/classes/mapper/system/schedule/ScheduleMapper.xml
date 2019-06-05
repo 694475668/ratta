@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="schedule">
+
+	<resultMap type="schedule" id="schedule">
+		<id property='id' column='id' />
+		<result property='name' column='name' />
+		<result property='remark' column='remark' />
+		<result property='cron' column='cron' />
+		<result property='status' column='status' />
+		<result property='created' column='created' />
+		<result property='createdby' column='createdby' />
+		<result property='updated' column='updated' />
+		<result property='updatedby' column='updatedby' />
+		<result property='bzcode' column='bzcode' />
+	</resultMap>
+
+	<resultMap type="schedule_log" id="schedule_log">
+		<id property='id' column='id' />
+		<result property='ksrq' column='ksrq' />
+		<result property='jsrq' column='jsrq' />
+		<result property='task_id' column='task_id' />
+		<result property='result' column='result' />
+	</resultMap>
+
+
+
+	<!-- 查询参数 -->
+	<sql id="select_params">
+		<if test="name != null and name != '' and name != '%%' ">
+			and t.name like #{name}
+		</if>
+
+		<if test="status != null and status!= '' ">
+			and t.status = #{status}
+		</if>
+	</sql>
+	<!-- 查询 -->
+	<select id="query" parameterType="hashmap" resultMap="schedule">
+		select tt.* from (
+		select t.* from t_m_schedule_task t where 1=1
+		<include refid="select_params" />
+		) tt limit #{p_begin},#{p_end}
+	</select>
+
+
+	<!-- 统计 -->
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(1) from t_m_schedule_task t where 1=1
+		<include refid="select_params" />
+	</select>
+
+
+	<update id="update"
+		parameterType="com.ratta.suponote.model.system.ScheduleTask">
+		update
+		t_m_schedule_task set
+		name = #{name},
+		remark = #{remark},
+		cron = #{cron},
+		updated = sysdate(),
+		updatedby = #{updatedby},
+		status = #{status}
+		where id = #{id}
+
+	</update>
+
+
+	<!-- 根据多个id更新任务调度启动状态 -->
+	<update id="updateStatusByIds" parameterType="hashmap">
+		update
+		t_m_schedule_task t set
+		t.status = #{status}
+		where id in (${ids})
+	</update>
+
+	<!-- 根据id查询调度任务信息 -->
+	<select id="queryById" parameterType="long" resultMap="schedule">
+		select *
+		from t_m_schedule_task t where t.id = #{id}
+	</select>
+
+	<!-- 根据多个id查询调度任务信息 -->
+	<select id="queryByIds" parameterType="hashmap"
+		resultMap="schedule">
+		select * from t_m_schedule_task t where t.id in (${ids})
+	</select>
+
+	<select id="queryAll" parameterType="long" resultMap="schedule">
+		select
+		t.name,t.CRON,t.STATUS,t.BZCODE from t_m_schedule_task t
+		union all
+		select s.ID name,s.PERFORM_TIME cron,s.FINISH_FLAG status,s.bzcode from
+		t_m_firmware_task s
+		where s.PERFORM_TIME &lt;&gt; '立即执行'
+	</select>
+
+	<insert id="saveLog" parameterType="schedule_log">
+		insert into
+		t_m_schedule_log
+		(KSRQ,JSRQ,TASK_ID,RESULT)
+		values
+		(
+		#{ksrq,jdbcType=TIMESTAMP},
+		#{jsrq,jdbcType=TIMESTAMP},
+		#{task_id,jdbcType=NUMERIC},
+		#{result,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<sql id="select_log_params">
+		<!-- * id 调度任务id -->
+		<if test="task_id !=null and task_id !='' ">
+			and k.id=#{task_id}
+		</if>
+		<!-- * date_begin 调度任务开始日期(yyyy-MM-dd) -->
+		<if test="date_begin !=null and date_begin !='' ">
+			and date_format(t.ksrq,'%Y-%m-%d')&gt;=#{date_begin}
+		</if>
+		<!-- * date_end 调度任务结束日期(yyyy-MM-dd) -->
+		<if test="date_end !=null and date_end !='' ">
+			and date_format(t.ksrq,'%Y-%m-%d') &lt;=#{date_end}
+		</if>
+
+	</sql>
+
+	<select id="queryLog" parameterType="long"
+		resultMap="schedule_log">
+		select tt.* from (
+		select t.* from t_m_schedule_log t, t_m_schedule_task k where t.task_id=k.id
+		and
+		1=1
+		<include refid="select_log_params" />
+		order by t.ksrq desc
+		) tt limit #{p_begin},#{p_end}
+
+	</select>
+
+	<!-- 统计 -->
+	<select id="countLog" parameterType="hashmap" resultType="long">
+		select count(1) from t_m_schedule_log t, t_m_schedule_task k where
+		t.task_id=k.id and
+		1=1
+		<include refid="select_log_params" />
+	</select>
+
+	<delete id="deleteByDays" parameterType="long">
+		delete from
+		t_m_schedule_log where
+		date_format(ksrq,'%Y-%m-%d') &lt;=DATE_SUB(CURDATE(),INTERVAL #{daysBefore} DAY)
+	</delete>
+
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="firmwareFixPoint">
+	<resultMap type="firmware_FixPoint" id="firmwareFixPoint">
+		<id column="ID" property="id" />
+		<result column="LAN" property="lan" />
+		<result column="FIX_POINT" property="fixPoint" />
+		<result column="FIRMWARE_VERSION" property="firmware_version" />
+		<result column="OP_USER" property="op_user" />
+		<result column="OP_TIME" property="op_time" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select distinct t.id, t.firmware_version,
+		(select d.value_cn from t_dictionary d where d.value=t.lan and
+		d.name='LAN')lan,t.fix_point,
+		t.op_user,t.op_time
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="firmware_version !=null and firmware_version !='' ">
+			and t.firmware_version like concat('%',trim(#{firmware_version}),'%')
+		</if>
+		<if test="lan !=null and lan !='' ">
+			and t.lan=#{lan}
+		</if>
+		<if test="id !=null and id !='' ">
+			and t.id=#{id}
+		</if>
+	</sql>
+
+	<select id="query" resultMap="firmwareFixPoint"
+		parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_firmware_fixpoint t
+		where 1=1
+		<include refid="select_param" />
+		order by
+		t.op_time desc
+		<if test="p_begin != null">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_firmware_fixpoint t
+		where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<!-- 增加记录 -->
+	<insert id="save" parameterType="firmware_FixPoint">
+		insert into t_firmware_fixpoint (lan, firmware_version, fix_point,op_user,
+		op_time)
+		values
+		(#{lan}, #{firmware_version}, #{fixPoint},#{op_user}, sysdate())
+	</insert>
+	<!-- 修改记录 -->
+	<update id="update" parameterType="firmware_FixPoint">
+		update t_firmware_fixpoint set
+		fix_point=#{fixPoint},op_user=#{op_user},op_time=sysdate()
+		where id=#{id}
+	</update>
+	<!-- 删除记录 -->
+	<delete id="delete" parameterType="string">
+		delete from t_firmware_fixpoint where firmware_version=#{firmwareVersion}
+	</delete>
+
+
+</mapper>

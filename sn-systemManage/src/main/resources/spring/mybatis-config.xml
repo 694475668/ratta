@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <typeAliases>
+     <!-- 用户管理 -->
+        <typeAlias alias="system_User" type="com.ratta.suponote.model.system.Tuser"/>
+        <!-- 角色 -->
+        <typeAlias alias="system_Role" type="com.ratta.suponote.model.system.Trole"/>
+        <!-- 用户改密历史表 -->
+        <typeAlias alias="pwdHis_PwdHis" type="com.ratta.suponote.model.system.PwdHis"/>
+        
+		<!-- 系统-表 -->
+		<typeAlias alias="system_Table" type="com.ratta.suponote.system.model.Table"/>
+		<!-- 数据字典-字段 -->
+		<typeAlias alias="system_Column" type="com.ratta.suponote.system.model.Column"/>
+        <!-- 审计操作 -->
+        <typeAlias alias="audit_Audit" type="com.ratta.suponote.model.system.maint.Audit"/>
+        <!-- 调度任务 -->
+        <typeAlias alias="schedule" type="com.ratta.suponote.model.system.ScheduleTask"/>
+
+		<!-- 调度任务日志记录 -->
+		<typeAlias alias="schedule_log" type="com.ratta.suponote.model.system.ScheduleLog" />
+		<!-- 错误码 -->
+    	<typeAlias alias="errorcode_ErrorCode" type="com.ratta.suponote.param.model.ErrorCode"/>
+    	<!-- 数据字典 -->
+    	<typeAlias alias="dictionary_Dictionary" type="com.ratta.suponote.param.model.Dictionary"/>
+    	<!-- 系统参数 -->
+    		<!-- 系统参数 -->
+        <typeAlias alias="reference_Reference"  type="com.ratta.suponote.param.model.Reference"/>
+        
+        <!-- 用户管理 -->
+        <typeAlias alias="sn_User" type="com.ratta.suponote.usersn.model.SNUser"/>
+          <!-- 用户设备 -->
+        <typeAlias alias="sn_User_Equip" type="com.ratta.suponote.usersn.model.UserEquipment"/>
+         <!-- SN用登录记录 -->
+         <typeAlias alias="LOGIN_RECORD" type="com.ratta.suponote.usersn.model.LoginRecord"/>
+        <!-- 经销商管理 -->
+        <typeAlias alias="dealers" type="com.ratta.suponote.business.model.Dealers"/>
+        <!--设备型号管理 -->
+        <typeAlias alias="equip_type" type="com.ratta.suponote.business.model.EquipType"/>
+        <!--设备库存管理 -->
+        <typeAlias alias="stock_Stock" type="com.ratta.suponote.stock.model.Stock"/>
+        <!--出入库管理 -->
+        <typeAlias alias="inOut_Stock" type="com.ratta.suponote.stock.model.InOutStock"/>
+        <!--固件版本管理 -->
+        <typeAlias alias="firmware_Info" type="com.ratta.suponote.firmware.model.FirmwareInfo"/>
+          <!--固件版本子类 -->
+        <typeAlias alias="firmware_Info_line" type="com.ratta.suponote.firmware.model.FirmwareInfoLine"/>
+          <!--固件版本任务 -->
+        <typeAlias alias="firmware_task_line" type="com.ratta.suponote.firmware.model.FirmwareTask"/>
+         <!--固件设备 -->
+        <typeAlias alias="firmware_equipment" type="com.ratta.suponote.firmware.model.FirmwareEquipment"/>
+        <!--固件压缩包 -->
+        <typeAlias alias="firmwareZip" type="com.ratta.suponote.firmware.model.FirmwareZip"/>
+        <!--固件修复点 -->
+        <typeAlias alias="firmware_FixPoint" type="com.ratta.suponote.firmware.model.FirmwareFixPoint"/>
+        <!--退换货 -->
+        <typeAlias alias="equipment_Return_record" type="com.ratta.suponote.stock.model.EquipmentReturnRecord"/>
+         <!--设备日志 -->
+        <typeAlias alias="equipment_Log" type="com.ratta.suponote.equipment.model.EquipmentLog"/>
+         <!--反馈问题类型 -->
+        <typeAlias alias="feedback_problem_type" type="com.ratta.suponote.feedback.model.FeedbackProblemType"/>
+          <!--反馈问题记录 -->
+        <typeAlias alias="feedback_record" type="com.ratta.suponote.feedback.model.FeedbackRecord"/>
+          <!--app修复点记录 -->
+        <typeAlias alias="appFixPoint" type="com.ratta.suponote.app.model.AppFixPoint"/>
+          <!--app版本号记录 -->
+        <typeAlias alias="appVersion" type="com.ratta.suponote.app.model.AppVersion"/>
+         <!--app版本灰度记录 -->
+        <typeAlias alias="appGrayDeploy" type="com.ratta.suponote.app.model.AppGrayDeploy"/>
+    </typeAliases>
+    <mappers>
+     <!-- 系统管理 -->
+        <!-- 资源-->
+        <mapper resource="mapper/system/ResourceMapper.xml"/>
+        <!-- 资源类型-->
+        <mapper resource="mapper/system/ResourceTypeMapper.xml"/>
+        <!-- 角色-->
+        <mapper resource="mapper/system/RoleMapper.xml"/>
+        <!-- 系统用户-->
+        <mapper resource="mapper/system/UserMapper.xml"/>
+        <!-- 系统-->
+        <mapper resource="mapper/system/DataDictMapper.xml"/>
+        <!-- 用户改密历史表 -->
+        <mapper resource="mapper/system/PwdHisMapper.xml"/>
+        <!-- 操作审计 -->
+        <mapper resource="mapper/system/maint/AuditMapper.xml"/>
+        <!-- 调度任务和调度任务日志记录 -->
+        <mapper resource="mapper/system/schedule/ScheduleMapper.xml"/>
+        <!-- 系统参数设置 -->
+        <mapper resource="mapper/param/ReferenceMapper.xml"/>
+        <!-- 错误码 -->
+    	<mapper resource="mapper/param/ErrorCodeMapper.xml"/>
+    	  <!-- 数据字典 -->
+    	<mapper resource="mapper/param/DictionaryMapper.xml"/>
+    	<!-- SN100用户-->
+        <mapper resource="mapper/usersn/SNUserMapper.xml"/>
+        <!-- SN100用户设备-->
+        <mapper resource="mapper/usersn/UserEquipmentMapper.xml"/>
+        <!-- SN用登录记录 -->
+         <mapper resource="mapper/usersn/LoginRecordMapper.xml"/>
+        <!-- 经销商管理-->
+        <mapper resource="mapper/business/DealersMapper.xml"/>
+         <!--设备型号管理-->
+         <mapper resource="mapper/business/EquipTypeMapper.xml"/>
+         <!--设备库存管理-->
+         <mapper resource="mapper/stock/StockMapper.xml"/>
+         <!--设备退换货管理-->
+         <mapper resource="mapper/stock/EquipmentReturnRecordMapper.xml"/>
+         <!--出入库记录管理-->
+         <mapper resource="mapper/stock/InOutStockMapper.xml"/>
+         <!--固件版本管理-->
+         <mapper resource="mapper/firmware/FirmwareInfoMapper.xml"/>
+          <!--固件版本任务管理-->
+         <mapper resource="mapper/firmware/FirmwareTaskMapper.xml"/>
+          <!--固件设备管理-->
+         <mapper resource="mapper/firmware/FirmwareEquipMapper.xml"/>
+         <!--固件设备管理-->
+         <mapper resource="mapper/firmware/FirmwareZipMapper.xml"/>
+         <!--固件修复点管理-->
+         <mapper resource="mapper/firmware/FirmwareFixPointMapper.xml"/>
+         <!--设备日志管理-->
+         <mapper resource="mapper/equipment/EquipmentLogMapper.xml"/>
+         <!--反馈问题类型管理-->
+         <mapper resource="mapper/feedback/FeedbackProblemTypeMapper.xml"/>
+         <!--反馈问题记录管理-->
+         <mapper resource="mapper/feedback/FeedbackRecordMapper.xml"/>
+         <!--app修复点管理-->
+         <mapper resource="mapper/app/AppFixPointMapper.xml"/>
+         <!--app版本管理-->
+         <mapper resource="mapper/app/AppVersionMapper.xml"/>
+         <!--app版本灰度管理-->
+         <mapper resource="mapper/app/AppGrayDeployMapper.xml"/>
+    </mappers>
+</configuration>

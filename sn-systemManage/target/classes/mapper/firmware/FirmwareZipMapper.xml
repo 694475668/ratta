@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="firmwareZip">
+	<resultMap id="firmwareZip" type="firmwareZip">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="VERSION" property="version" jdbcType="VARCHAR" />
+		<result column="APP_FLAG" property="appFlag" jdbcType="CHAR" />
+		<result column="SYSTEM_FLAG" property="systemFlag"
+			jdbcType="CHAR" />
+		<result column="LIB_APP_FLAG" property="libAppFlag"
+			jdbcType="CHAR" />
+		<result column="LIB_SYSTEM_FLAG" property="libSystemFlag"
+			jdbcType="CHAR" />
+		<result column="URL" property="url" jdbcType="VARCHAR" />
+		<result column="MD5" property="md5" jdbcType="VARCHAR" />
+		<result column="SECRET" property="secret" jdbcType="VARCHAR" />
+		<result column="OP_USER" property="opUser" jdbcType="VARCHAR" />
+		<result column="OP_TIME" property="opTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="FirmwareZip_List">
+		ID, VERSION, APP_FLAG, SYSTEM_FLAG, LIB_APP_FLAG, LIB_SYSTEM_FLAG, URL,
+		MD5, OP_USER,
+		OP_TIME
+	</sql>
+	<select id="query" resultMap="firmwareZip"
+		parameterType="hashmap">
+		select
+		<include refid="FirmwareZip_List" />
+		from t_firmware_zip
+		where version = #{version}
+	</select>
+	<insert id="insertFirmwareZip" parameterType="firmwareZip">
+		insert into
+		t_firmware_zip
+		(
+		VERSION,
+		APP_FLAG,
+		SYSTEM_FLAG,
+		LIB_APP_FLAG,
+		LIB_SYSTEM_FLAG,
+		URL,
+		MD5,
+		SECRET,
+		OP_USER,
+		OP_TIME
+		)
+		values
+		(
+		#{version},
+		#{appFlag},
+		#{systemFlag},
+		#{libAppFlag},
+		#{libSystemFlag},
+		#{url},
+		#{md5},
+		#{secret},
+		#{opUser},
+		sysdate()
+		)
+	</insert>
+	<delete id="delete" parameterType="hashmap">
+		delete from t_firmware_zip
+		where version = #{version}
+	</delete>
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration debug="true">
+	<contextName>sn-systemManage-front</contextName>
+	<property resource="logback.properties"/>
+    <appender name="RootLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logRoot}/systemManage-front-root.log</file>
+        <encoder>
+            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logRoot}/systemManage-front-root.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>512MB</maxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="ManageLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logRoot}/systemManage-front.log</file>
+        <encoder>
+            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${logRoot}/systemManage-front.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <minIndex>0</minIndex>
+            <maxIndex>10</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>128MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>
+
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <!-- Only log level INFO and above -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logLevel}</level>
+        </filter>
+    </appender>
+
+    <logger name="com.ratta.spnote" level="${logLevel}" additivity="${logAdditivity}">
+        <appender-ref ref="ManageLogFile"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+    
+    <root level="${logLevel}">
+        <appender-ref ref="RootLogFile"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

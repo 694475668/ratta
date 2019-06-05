@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="feedbackProblemType">
+	<resultMap type="feedback_problem_type" id="feedbackProblemType">
+		<id column="type_id" property="typeId" />
+		<result column="value_en" property="valueEn" />
+		<result column="value_ja" property="valueJa" />
+		<result column="value_cn" property="valueCn" />
+		<result column="op_user" property="opUser" />
+		<result column="op_time" property="opTime" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select distinct t.type_id,t.value_en,t.value_ja,t.value_cn,t.op_user,t.op_time 
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="typeId !=null and typeId !='' ">
+			and t.type_id like concat(trim(#{typeId}),'%')
+		</if>
+	</sql>
+
+	<select id="query" resultMap="feedbackProblemType" parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_feedback_type t
+		where t.status='1'
+		<include refid="select_param" />
+		order by t.type_id asc limit #{p_begin},#{p_end}
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_feedback_type t
+		where t.status='1'
+		<include refid="select_param" />
+	</select>
+	
+	<insert id="insert" parameterType="feedback_problem_type">
+		insert into t_feedback_type (type_id,value_cn,value_en,
+		value_ja,status,op_user, op_time)
+		values (#{typeId},#{valueCn},#{valueEn},
+		#{valueJa},'1',#{opUser}, sysdate())
+	</insert>
+	
+	<update id="delete" parameterType="string">
+		update t_feedback_type t set t.status='2' where t.type_id = #{typeId}
+	</update>
+	
+	<update id="update" parameterType="feedback_problem_type">
+		update t_feedback_type t set 
+		t.value_cn = #{valueCn},
+		t.value_En = #{valueEn},
+		t.value_Ja = #{valueJa} 
+		 where t.type_id = #{typeId}
+	</update>
+	
+	<select id="queryById" parameterType="string" resultMap="feedbackProblemType">
+		<include refid="Base_Column_List" />
+		from t_feedback_type t
+		where t.type_id = #{typeId}
+	</select>
+	
+	<!-- 查询第一级问题类型 -->
+	<select id="queryValueOne" resultMap="feedbackProblemType">
+		<include refid="Base_Column_List" />
+		from t_feedback_type t where t.type_id not like "%.%"
+	</select>
+	
+	<!-- 查询第二级问题类型 -->
+	<select id="queryValueTwo" parameterType="string" resultMap="feedbackProblemType">
+		<include refid="Base_Column_List" />
+		from t_feedback_type t where t.type_id  like concat(trim(#{typeId}),'.%')
+		 and t.type_id not like concat(trim(#{typeId}),'.%.%')
+	</select>
+	
+	<!-- 查询第三级问题类型 -->
+	<select id="queryValueThree" parameterType="string" resultMap="feedbackProblemType">
+		<include refid="Base_Column_List" />
+		from t_feedback_type t where t.type_id like concat(trim(#{typeId}),'.%')
+	</select>
+	
+	<select id="queryListById" parameterType="string" resultMap="feedbackProblemType">
+		<include refid="Base_Column_List" />
+		from t_feedback_type t
+		where t.type_id like concat(trim(#{typeId}),'%') and t.status='1'
+	</select>
+</mapper>

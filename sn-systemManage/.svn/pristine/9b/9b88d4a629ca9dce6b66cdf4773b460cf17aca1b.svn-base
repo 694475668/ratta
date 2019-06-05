@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		 http://code.alibabatech.com/schema/dubbo
+		 http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+		 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+		 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		 ">
+		 
+    <!-- 提供方应用信息，用于计算依赖关系 -->
+    <dubbo:application name="sn-systemManage-service" logger="slf4j"/>
+
+    <!-- 使用zookeeper广播注册中心暴露服务地址 -->
+    <dubbo:registry address="${dubboRegistry}"/>
+
+    <!-- 用dubbo协议暴露服务 -->
+    <dubbo:protocol name="dubbo" host="${dubboHost}" port="${dubboPort}"/>    
+
+	<dubbo:provider version="${dubboVersion}" timeout="300000"/>
+
+<!-- 声明需要暴露的服务接口-->
+<!-- 资源 -->
+<dubbo:service  interface="com.ratta.suponote.system.service.ResourceService"  ref="resourceService"/>
+<!-- 资源类型 -->
+<dubbo:service  interface="com.ratta.suponote.system.service.ResourceTypeService" ref="resourceTypeService"/>
+<!-- 角色 -->
+<dubbo:service  interface="com.ratta.suponote.system.service.RoleService" ref="roleService"/>
+<!-- 用户 -->
+<dubbo:service  interface="com.ratta.suponote.system.service.UserService" ref="userService"/>
+<!-- 操作审计 -->
+<dubbo:service  interface="com.ratta.suponote.service.system.maint.AuditService" ref="auditService"/>
+<!-- 任务调度 -->
+<dubbo:service  interface="com.ratta.suponote.system.service.ScheduleTaskService" ref="scheduleTaskService"/>
+<!-- 系统参数详细 -->
+<dubbo:service  interface="com.ratta.suponote.param.service.ReferenceService" ref="referenceService"/>
+<!-- 错误码服务 -->
+<dubbo:service  interface="com.ratta.suponote.param.service.ErrorCodeService" ref="errorCodeService"/>
+<!--数据字典服务 -->
+<dubbo:service  interface="com.ratta.suponote.param.service.DictionaryService" ref="dictionaryService"/>
+
+<!-- SN用户 -->
+<dubbo:service  interface="com.ratta.suponote.usersn.service.SNUserService" ref="snuserService"/>
+<!-- SN用户设备 -->
+<dubbo:service  interface="com.ratta.suponote.usersn.service.UserEquipmentService" ref="userEquipmentService"/>
+<!-- SN用登录记录 -->
+<dubbo:service  interface="com.ratta.suponote.usersn.service.LoginRecordService" ref="loginRecordService"/>
+<!-- 业务管理 -->
+<dubbo:service  interface="com.ratta.suponote.business.service.DealersService" ref="dealersService"/>
+<dubbo:service  interface="com.ratta.suponote.business.service.EquipTypeService" ref="equipTypeService"/>
+<!-- 库存管理 -->
+<dubbo:service  interface="com.ratta.suponote.stock.service.StockService" ref="stockService"/>
+<!--退换货管理 -->
+<dubbo:service  interface="com.ratta.suponote.stock.service.EquipmentReturnRecordService" ref="equipmentReturnRecordService"/>
+<!-- 出入库记录管理 -->
+<dubbo:service  interface="com.ratta.suponote.stock.service.InOutStockService" ref="inOutStockService"/>
+<!--设备日志管理 -->
+<dubbo:service  interface="com.ratta.suponote.equipment.service.EquipmentLogService" ref="equipmentLogService"/>
+<!-- 固件版本管理 -->
+<dubbo:service  interface="com.ratta.suponote.firmware.service.FirmwareInfoService" ref="firmwareInfoService"/>
+<!-- 固件任务管理 -->
+<dubbo:service  interface="com.ratta.suponote.firmware.service.FirmwareTaskService" ref="firmwareTaskService"/>
+<!-- 固件设备管理 -->
+<dubbo:service  interface="com.ratta.suponote.firmware.service.FirmwareEquipService" ref="firmwareEquipService"/>
+<!-- 固件压缩包管理 -->
+<dubbo:service  interface="com.ratta.suponote.firmware.service.FirmwareZipService" ref="firmwareZipService"/>
+<!-- 固件修复点管理 -->
+<dubbo:service  interface="com.ratta.suponote.firmware.service.FirmwareFixPointService" ref="firmwareFixPointService"/>
+<!-- 反馈问题类型管理 -->
+<dubbo:service  interface="com.ratta.suponote.feedback.service.FeedbackProblemTypeService" ref="feedbackProblemTypeService"/>
+<!-- 反馈问题记录管理 -->
+<dubbo:service  interface="com.ratta.suponote.feedback.service.FeedbackRecordService" ref="feedbackRecordService"/>
+<!-- app修复点管理 -->
+<dubbo:service  interface="com.ratta.suponote.app.service.AppFixPointService" ref="appFixPointService"/>
+<!-- app版本管理 -->
+<dubbo:service  interface="com.ratta.suponote.app.service.AppVersionService" ref="appVersionService"/>
+</beans>

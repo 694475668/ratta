@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="appFixPoint">
+	<resultMap id="appFixPoint" type="appFixPoint">
+		<id column="id" property="id" />
+		<result column="app_id" property="appId" />
+		<result column="app_name" property="appName" />
+		<result column="app_version" property="appVersion" />
+		<result column="lan" property="lan" />
+		<result column="fix_point" property="fixPoint" />
+		<result column="op_user" property="opUser" />
+		<result column="op_time" property="opTime" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+	   select t.id,t.app_id,s.app_name,s.app_version,t.lan,t.fix_point,t.op_user,t.op_time
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+     	<if test="lan != null and lan !='' ">
+			and t.lan = #{lan}
+		</if>
+		<if test="appName != null and appName !='' ">
+			and s.app_name like concat('%',#{appName},'%')
+		</if>
+		<if test="appVersion !=null and appVersion !='' ">
+			and s.app_version like concat('%',trim(#{appVersion}),'%')
+		</if>
+	</sql>
+
+	<select id="query" resultMap="appFixPoint" parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		FROM t_app_fixpoint t LEFT JOIN t_app_version s ON t.app_id = s.id
+		where 1=1
+		<include refid="select_param" />
+		order by s.app_name,t.op_time asc 
+		<if test="p_begin !=null and p_begin !='' ">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="java.lang.Long">
+		select count(*) from t_app_fixpoint t LEFT JOIN t_app_version s ON t.app_id = s.id
+		where 1=1
+		<include refid="select_param" />
+	</select>
+
+    <!-- 增加记录 -->
+	<insert id="save" parameterType="appFixPoint">
+		insert into t_app_fixpoint (app_id,lan,fix_point,op_user,op_time)
+		values
+		(#{appId}, #{lan}, #{fixPoint},#{opUser}, sysdate())
+	</insert>
+	<!-- 修改记录 -->
+	<update id="update" parameterType="appFixPoint">
+		update t_app_fixpoint t set
+		t.fix_point=#{fixPoint},t.op_user=#{opUser},t.op_time=sysdate()
+		where t.id=#{id}
+	</update>
+	
+	<delete id="deleteFixPointByAppId" parameterType="INTEGER">
+	    delete from t_app_fixpoint where app_id = #{id}
+	</delete>
+	
+	<select id="queryById" parameterType="INTEGER" resultMap="appFixPoint">
+		<include refid="Base_Column_List" />
+		from t_app_fixpoint t LEFT JOIN t_app_version s ON t.app_id = s.id 
+		where t.id = #{id}
+	</select>
+</mapper>

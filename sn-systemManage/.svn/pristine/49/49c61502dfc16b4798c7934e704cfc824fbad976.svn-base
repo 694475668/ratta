@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="equipType">
+	<resultMap type="equip_type" id="equiptype">
+		<id column="ID" property="id" />
+		<result column="TYPE" property="type" />
+		<result column="SN_LENGTH" property="sn_length" />
+		<result column="SN_FRONT" property="sn_front" />
+		<result column="SN_OFFSET" property="sn_offset" />
+		<result column="SN_OFFSET_LENGTH" property="sn_offset_length" />
+		<result column="REMARK" property="remark" />
+		<result column="OP_USER" property="op_user" />
+		<result column="OP_TIME" property="op_time" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select t.id, t.type,
+		t.sn_length,t.sn_front,t.sn_offset,t.sn_offset_length,t.remark,t.op_user,
+		t.op_time
+	</sql>
+
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="type != null and type !='' ">
+			and t.type like concat('%',#{type},'%')
+		</if>
+	</sql>
+	<!-- 查询所有记录 -->
+	<select id="query" resultMap="equiptype" parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_m_equiptype t
+		where 1=1
+		<include refid="select_param" />
+		order by
+		t.op_time desc
+		<if test="p_begin !=null">
+			limit #{p_begin},#{p_end}
+		</if>
+	</select>
+	<!-- 统计所有记录 -->
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_m_equiptype t
+		where 1=1
+		<include refid="select_param" />
+	</select>
+	<!-- 增加记录 -->
+	<insert id="insert" parameterType="equip_type">
+		insert into t_m_equiptype (type, sn_length, sn_front, sn_offset,
+		sn_offset_length, remark,op_user, op_time)
+		values
+		(#{type}, #{sn_length}, #{sn_front}, #{sn_offset},
+		#{sn_offset_length},#{remark},#{op_user}, sysdate())
+	</insert>
+	<!-- 修改记录 -->
+	<update id="update" parameterType="equip_type">
+		update t_m_equiptype
+		set type = #{type},
+		sn_length = #{sn_length},
+		sn_front = #{sn_front},
+		sn_offset = #{sn_offset},
+		sn_offset_length = #{sn_offset_length},
+		remark = #{remark},
+		op_user = #{op_user},
+		op_time = sysdate()
+		where id = #{id}
+	</update>
+	<!-- 删除记录 -->
+	<delete id="delete" parameterType="long">
+		delete from t_m_equiptype
+		where id = #{id}
+	</delete>
+	<!-- 根据ID查询记录 -->
+	<select id="queryById" parameterType="hashmap"
+		resultMap="equiptype">
+		<include refid="Base_Column_List" />
+		from t_m_equiptype t
+		where t.id = #{id}
+	</select>
+	<!-- 根据名称查询设备信息 -->
+	<select id="queryByType" parameterType="string"
+		resultMap="equiptype">
+		<include refid="Base_Column_List" />
+		from t_m_equiptype t
+		where t.type = #{type}
+	</select>
+</mapper>

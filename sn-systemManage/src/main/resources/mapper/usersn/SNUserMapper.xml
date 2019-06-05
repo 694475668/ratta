@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="snuser">
+	<resultMap type="sn_User" id="snuser">
+		<id column='USER_ID' property='userid' />
+		<result column='USER_NAME' property='username' />
+		<result column='TELEPHONE' property='telephone' />
+		<result column='COUNTRY_CODE' property='countryCode' />
+		<result column='EMAIL' property='email' />
+		<result column='WECHAT_NO' property='wechatno' />
+		<result column='ADDRESS' property='address' />
+		<result column='SEX' property='sex' />
+		<result column='JOB' property='job' />
+		<result column='EDUCATION' property='education' />
+		<result column='BIRTHDAY' property='birthday' />
+		<result column='PERSONALSIGN' property='personalsign' />
+		<result column='HOBBY' property='hobby' />
+		<result column='PASSWORD' property='password' />
+		<result column='CREATE_TIME' property='createtime' />
+		<result column='LAST_UPDATE_TIME' property='lastupdatetime' />
+		<result column='ISNORMAL' property='isNormal' />
+		<result column='TOTAL_CAPACITY' property='totalcapacity' />
+		<result column='COUNTS' property='counts' />
+	</resultMap>
+
+	<resultMap type="sn_User_Equip" id="snuserEquip">
+		<id column='id' property='id' />
+		<result column='equipment_number' property='equipment_number' />
+		<result column='name' property='name' />
+		<result column='status' property='status' />
+		<result column='online_status' property='online_status' />
+		<result column='create_time' property='create_time' />
+		<result column='last_update_time' property='last_update_time' />
+	</resultMap>
+
+	<sql id="sql_select_base">
+		select t.USER_ID,t.USER_NAME,t.COUNTRY_CODE,t.TELEPHONE,t.EMAIL,t.WECHAT_NO,t.ADDRESS,
+		t.sex,t.job,t.education,t.birthday,t.PERSONALSIGN,t.hobby,t.PASSWORD,
+		t.CREATE_TIME,t.LAST_UPDATE_TIME,
+		t.ISNORMAL,t.TOTAL_CAPACITY,t.COUNTS
+	</sql>
+	<!-- 基本界面的查询条件 -->
+	<sql id="sql_select_params">
+		<if test="modifydatetimeStart != null and modifydatetimeStart!=''">
+			and date_format(t.CREATE_TIME,'%Y-%m-%d')&gt;=#{modifydatetimeStart}
+		</if>
+		<if test="modifydatetimeEnd != null and modifydatetimeEnd !='' ">
+			and date_format(t.CREATE_TIME,'%Y-%m-%d')&lt;=#{modifydatetimeEnd}
+		</if>
+		<if test="username != null and username !='' ">
+			and t.user_name like concat(concat('%',#{username}),'%')
+		</if>
+		<if test="wechatno != null and wechatno !='' ">
+			and t.WECHAT_NO like concat(concat('%',#{wechatno}),'%')
+		</if>
+		<if test="email != null and email !='' ">
+			and t.EMAIL like concat(concat('%',#{email}),'%')
+		</if>
+		<if test="telephone != null and telephone !='' ">
+			and t.TELEPHONE like concat(concat('%',#{telephone}),'%')
+		</if>
+		<if test="address != null and address !='' ">
+			and t.address like concat(concat('%',#{address}),'%')
+		</if>
+		<if test="isNormal != null and isNormal != '' ">
+			and t.ISNORMAL = #{isNormal}
+		</if>
+	</sql>
+
+
+
+	<!-- 获取所有的snuser -->
+	<select id="getAllSNUser" resultMap="snuser"
+		parameterType="hashmap">
+		<include refid="sql_select_base" />
+		from t_user t where 1=1
+		<include refid="sql_select_params" />
+		order by t.last_update_time desc limit #{p_begin},#{p_end}
+	</select>
+
+	<!-- 统计所有的snuser -->
+	<select id="countAllSNUser" resultType="long"
+		parameterType="hashmap">
+		select count(1) from t_user t where 1=1
+		<include refid="sql_select_params" />
+	</select>
+
+
+	<!-- 冻结SN用户 -->
+	<update id="updateIsNormal" parameterType="hashmap">
+		update t_user t set
+		t.ISNORMAL=#{isNormal,jdbcType=VARCHAR},
+		t.last_update_time=sysdate()
+		where t.user_id=#{userid,jdbcType=NUMERIC}
+	</update>
+
+	<!-- getTUserById -->
+	<select id="getTUserById" resultMap="snuser"
+		parameterType="string">
+		select
+		t.USER_ID,t.USER_NAME,t.COUNTRY_CODE,t.TELEPHONE,t.EMAIL,t.WECHAT_NO,t.ADDRESS,
+		t.sex,t.job,t.education,t.birthday,t.PERSONALSIGN,t.hobby,t.PASSWORD,
+		t.CREATE_TIME,t.LAST_UPDATE_TIME,t.ISNORMAL,t.TOTAL_CAPACITY,t.COUNTS
+		from t_user t where t.user_id=#{userid}
+	</select>
+	<!-- 修改账号 -->
+	<update id="updateAccount" parameterType="sn_User">
+		update t_user t set 
+		<if test="telephone != null and telephone !='' ">
+			TELEPHONE=#{telephone,jdbcType=VARCHAR},
+		    COUNTRY_CODE=#{countryCode,jdbcType=VARCHAR},
+		</if>
+		<if test="email != null and email !='' ">
+			EMAIL=#{email,jdbcType=VARCHAR},
+		</if>
+		LAST_UPDATE_TIME=sysdate()
+		where USER_ID=#{userid}
+	</update>
+	<!-- 解绑 -->
+	<delete id="unBund" parameterType="long">
+		delete from t_user_equipment
+		where id=#{id}
+	</delete>
+	<!-- 根据设备号查询用户账号 -->
+	<select id="getUsernameByEquipmentNo" resultType="string"
+		parameterType="string">
+		select s.TELEPHONE from t_user_equipment t left join
+		t_user s on t.USER_ID=s.USER_ID
+		where t.EQUIPMENT_NUMBER=#{equipment_number}
+	</select>
+	<!-- 根据手机号或邮箱判断用户是否存在 -->
+	<select id="countSnUserByTelphoneOrEmail" resultType="long" parameterType="hashmap">
+		select count(1) from t_user t where 1=1
+		<if test="email != null and email !='' ">
+			and t.EMAIL = #{email}
+		</if>
+		<if test="telephone != null and telephone !='' ">
+			and t.TELEPHONE = #{telephone}
+		</if>
+	</select>
+</mapper>

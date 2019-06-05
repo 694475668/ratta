@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="user">
+	<resultMap type="system_User" id="user_base">
+		<id column='id' property='id' />
+		<result column='username' property='username' />
+		<result column='name' property='name' />
+		<result column='phone' property='phone' />
+		<result column='address' property='address' />
+		<result column='email' property='email' />
+		<result column='pwd' property='pwd' />
+		<result column='counts' property='counts' />
+		<result column='status' property='status' />
+		<result column='isactive' property='isactive' />
+		<result column='last_logindate' property='last_logindate' />
+		<result column='created' property='created' />
+		<result column='createdby' property='createdby' />
+		<result column='updated' property='updated' />
+		<result column='updatedby' property='updatedby' />
+		<result column="modify_pwd" property="modify_pwd" />
+	</resultMap>
+	<resultMap type="system_User" id="user" extends="user_base">
+		<collection property="troles" javaType="java.util.Set"
+			ofType="system_Role" column="id" columnPrefix="r_"
+			resultMap="role.Trole" />
+	</resultMap>
+
+	<sql id="sql_select_base">
+		select t.id,t.username,t.name,t.phone,t.address,t.email,t.modify_pwd,
+		t.pwd,t.counts,t.status,t.isactive,t.last_logindate,t.created,t.updated,
+		t.createdby,(select t1.name from t_m_user t1 where t1.username=
+		t.updatedby ) updatedby,r.id r_id,r.name r_name,r.remark r_remark
+	</sql>
+
+	<sql id="select_entity">
+		select t.id,t.username,t.name,t.phone,t.address,t.email,t.modify_pwd,
+		t.pwd,t.counts,t.status,t.isactive,t.last_logindate,t.created,t.updated,
+		t.createdby,t.updatedby,r.id r_id,r.name r_name,r.remark r_remark
+	</sql>
+	<!-- 基本界面的查询条件 -->
+	<sql id="sql_select_params">
+		<if test="modifydatetimeStart != null and modifydatetimeStart!=''">
+			and date_format(t.updated,'%Y-%m-%d')>=#{modifydatetimeStart}
+		</if>
+		<if test="modifydatetimeEnd != null and modifydatetimeEnd !='' ">
+			and date_format(t.updated,'%Y-%m-%d')&lt;=#{modifydatetimeEnd}
+		</if>
+		<if test="username != null and username !='' ">
+			and t.username like #{username}
+		</if>
+		<if test="status != null and status != '' ">
+			and t.status = #{status}
+		</if>
+	</sql>
+
+
+
+	<!-- 获取所有的user -->
+	<select id="getAllUser" resultMap="user" parameterType="hashmap">
+		<include refid="sql_select_base" />
+		from (
+		select t.* from (
+		select t.* from t_m_user t where t.isactive='Y' and t.id !=1
+		<include refid="sql_select_params" />
+
+		<if test="roleIds != null and roleIds != '' ">
+			and exists(select 1 from t_m_user_trole ur where t.id=ur.tuser_id and
+			ur.trole_id=#{roleIds})
+		</if>
+
+		order by t.updated desc limit #{p_begin},#{p_end}
+		) t
+		) t left join t_m_user_trole tr on t.id = tr.tuser_id left join
+		t_m_role r on tr.trole_id= r.id
+
+		order by t.updated desc
+	</select>
+
+
+	<select id="countAllUser" resultType="long"
+		parameterType="hashmap">
+		select count(1) from t_m_user t where t.isactive='Y' and t.id !=1
+		<include refid="sql_select_params" />
+		<if test="roleIds != null and roleIds != '' ">
+			and exists (select 1 from t_m_user_trole tr where tr.tuser_id=t.id and
+			tr.trole_id =#{roleIds})
+		</if>
+	</select>
+
+	<!-- getUserById -->
+	<select id="getUserByNameAndPWD" resultMap="user"
+		parameterType="hashmap">
+		<include refid="sql_select_base" />
+		from t_m_user t where binary t.username=#{user_name} and t.pwd=#{pwd}
+	</select>
+
+	<!-- getUserByUserName 不区分大小写 -->
+	<select id="getUserByUserName" parameterType="String"
+		resultMap="user">
+		<include refid="sql_select_base" />
+		from t_m_user t left join t_m_user_trole tr on t.id = tr.tuser_id left
+		join t_m_role r on tr.trole_id= r.id
+		where t.username=trim(#{username})
+	</select>
+	<!-- getUserByUserName 区分大小写 -->
+	<select id="getUserByUserName1" parameterType="String"
+		resultMap="user">
+		<include refid="sql_select_base" />
+		from t_m_user t left join t_m_user_trole tr on t.id = tr.tuser_id left
+		join t_m_role r on tr.trole_id= r.id
+		where binary t.username=trim(#{username})
+	</select>
+
+	<!-- getTUserById -->
+	<select id="getTUserById" resultMap="user"
+		parameterType="hashmap">
+		<include refid="select_entity" />
+		,r.id r_id,r.name r_name,r.remark r_remark
+		from t_m_user t left join t_m_user_trole tr on t.id = tr.tuser_id left
+		join t_m_role r on tr.trole_id= r.id
+		where t.id=#{id}
+	</select>
+	<!-- 保存用户数据 -->
+	<insert id="save" parameterType="system_User" keyProperty="id">
+		insert into t_m_user(id,username,name,phone,address,email,pwd,
+		counts,status,isactive,created,createdby,updated,updatedby)
+		values
+		(
+		#{id,jdbcType=NUMERIC},
+		#{username,jdbcType=VARCHAR},
+		#{name,jdbcType=VARCHAR},
+		#{phone,jdbcType=VARCHAR},
+		#{address,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR},
+		#{pwd,jdbcType=VARCHAR},
+		#{counts,jdbcType=NUMERIC},
+		#{status,jdbcType=VARCHAR},
+		#{isactive,jdbcType=VARCHAR},
+		sysdate(),
+		#{createdby,jdbcType=VARCHAR},
+		sysdate(),
+		#{createdby,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- 获取最新 SEQUENCE 值 -->
+	<select id="getMaxSEQ" resultType="long">
+		select ifnull(max(t.id),0)+1 from t_m_user t
+	</select>
+
+	<!-- 更新 -->
+	<update id="update" parameterType="system_User">
+		update t_m_user t set
+		t.username=#{username,jdbcType=VARCHAR},
+		t.name=#{name,jdbcType=VARCHAR},
+		t.phone=#{phone,jdbcType=VARCHAR},
+		t.address=#{address,jdbcType=VARCHAR},
+		t.email=#{email,jdbcType=VARCHAR},
+		t.pwd=#{pwd,jdbcType=VARCHAR},
+		t.counts=#{counts,jdbcType=NUMERIC},
+		t.status=#{status,jdbcType=VARCHAR},
+		t.isactive=#{isactive,jdbcType=VARCHAR},
+		t.updated=sysdate(),
+		t.updatedby=#{updatedby,jdbcType=VARCHAR},
+		t.modify_pwd=#{modify_pwd,jdbcType=VARCHAR}
+		where t.id=#{id,jdbcType=NUMERIC}
+	</update>
+
+	<!-- deleteUserRoles 删除用户的角色数据 -->
+	<delete id="deleteUserRoles" parameterType="java.util.List">
+		delete from t_m_user_trole where tuser_id in (
+		<foreach collection="list" index="index" item="item"
+			separator=",">
+			#{item.id}
+		</foreach>
+
+		)
+	</delete>
+
+	<!-- 物理删除用户 -->
+	<delete id="delete" parameterType="hashmap">
+		delete from t_m_user where id = #{id}
+	</delete>
+
+	<!-- 添加用户与角色对应关系 -->
+	<insert id="insertUserRoles" parameterType="hashmap">
+		insert into
+		t_m_user_trole values (#{u_id},#{r_id})
+	</insert>
+	<!-- 查询锁定用户 -->
+	<select id="selectLocked" parameterType="hashmap"
+		resultType="long">
+		select count(1)
+		from t_m_user t
+		where t.isactive = 'Y'
+		and t.counts >=
+		(
+		select cast(t.value as decimal(10,2) )
+		from t_m_reference t
+		where
+		t.serial = #{serial}
+		and t.name = #{name}
+		)
+		and t.id=#{id}
+	</select>
+
+	<!-- 查询锁定用户 -->
+	<select id="getByIds" parameterType="String" resultMap="user">
+		<include refid="sql_select_base" />
+		,r.id r_id,r.name r_name,r.remark r_remark
+		from t_m_user t left join t_m_user_trole tr on t.id = tr.tuser_id left
+		join t_m_role r on tr.trole_id= r.id
+		where t.id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<!-- 更新用户密码输错次数 -->
+	<update id="errorLogin" parameterType="long">
+		update t_m_user t set t.counts = t.counts+1 where t.id =#{id}
+	</update>
+	<!-- 锁定用户操作 -->
+	<update id="lockUser" parameterType="long">
+		update t_m_user t set t.status = 0 where t.id =#{id}
+	</update>
+	<!-- 清除用户密码输错次数 -->
+	<update id="freshErrorLogin" parameterType="long">
+		update t_m_user t set t.counts =0 where t.id =#{id}
+	</update>
+
+	<!-- 查询剩余密码登录次数 -->
+	<select id="selectErrorCounts" parameterType="hashmap" resultType="long">
+		select (
+		select cast(t.value as decimal(10,0) )
+		from t_m_reference t
+		where
+		t.serial = #{serial} 
+		and t.name=#{name}
+		) - u.counts
+		from t_m_user u
+		where u.isactive = 'Y'
+		and u.id=#{id}
+	</select>
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="appGrayDeploy">
+	<resultMap id="appGrayDeploy" type="appGrayDeploy">
+		<id column="id" property="id" />
+		<result column="app_id" property="appId" />
+		<result column="user_id" property="userId" />
+		<result column="is_history" property="isHistory" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+	
+	<update id="updateByAppId" parameterType="Integer">
+	    update t_app_gray_deploy t set 
+	    t.is_history = '2',
+	    t.update_time = sysdate() 
+	    where t.app_id = #{appId}
+	</update>
+	
+	<delete id="deleteByParam" parameterType="hashmap">
+	    delete from t_app_gray_deploy where app_id = #{appId} and user_id = #{userId}
+	</delete>
+	
+	<insert id="save"  parameterType="appGrayDeploy">
+		insert into t_app_gray_deploy (app_id,user_id,is_history,create_time,update_time) 
+		values
+		(#{appId},#{userId},'1',sysdate(),sysdate())
+	</insert>
+	
+</mapper>

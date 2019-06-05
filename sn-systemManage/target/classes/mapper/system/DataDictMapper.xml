@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="system_DataDict">
+	<!-- 表名 -->
+	<resultMap type="system_Table" id="table">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="type" column="type" />
+		<result property="description" column="description" />
+		<result property="updatedby" column="uddatedby" />
+		<result property="updated" column="updated" />
+	</resultMap>
+
+	<!-- 字段 -->
+	<resultMap type="system_Column" id="column">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="type" column="type" />
+		<result property="length" column="length" />
+		<result property="is_null" column="is_null" />
+		<result property="is_primary" column="is_primary" />
+		<result property="is_auto_increment" column="is_auto_increment" />
+		<result property="description" column="description" />
+		<result property="table_id" column="table_id" />
+		<result property="updatedby" column="updatedby" />
+		<result property="updated" column="updated" />
+		<result property="default_val" column="default_val" />
+	</resultMap>
+
+	<sql id="select_table_datagrid">
+		select t.id, t.name,
+		t.type,
+		t.description,
+		(select u.name
+		from t_m_user u where u.username=t.updatedby) updatedby,
+		t.updated
+	</sql>
+	<sql id="select_table_entity">
+		select
+		t.id,t.name,t.type,t.description,t.updatedby,t.updated
+	</sql>
+	<sql id="select_table_param">
+		<!-- * name 表名(模糊查询) -->
+		<if test="name != null and name !='' ">
+			and t.name like concat('%',trim(#{name}),'%')
+		</if>
+		<!-- * type 类型(1表,2视图,3函数,4触发器) -->
+		<if test="type != null and type !='' ">
+			and t.type =#{type}
+		</if>
+		<!-- * description 描述(模糊查询) -->
+		<if test="description != null and description !='' ">
+			and t.description like
+			concat('%',trim(#{description}),'%')
+		</if>
+	</sql>
+	<!-- 查询表名 -->
+	<select id="queryTable" parameterType="hashmap"
+		resultMap="table">
+		<include refid="select_table_datagrid" />
+		from t_table t where 1=1
+		<include refid="select_table_param" />
+		limit #{p_begin},#{p_end}
+	</select>
+	<!-- 统计表名 -->
+	<select id="countTable" parameterType="hashmap"
+		resultType="long">
+		select count(1) from t_table t where 1=1
+		<include refid="select_table_param" />
+	</select>
+	<!-- 查询实体 -->
+	<select id="queryTableEntity" parameterType="int"
+		resultMap="table">
+		<include refid="select_table_entity" />
+		from t_table t where t.id=#{id}
+	</select>
+	<!-- 添加表名 -->
+	<insert id="addTable" parameterType="system_Table">
+		insert into t_table
+		(name,type,description,updatedby,updated)
+		values
+		(
+		#{name,jdbcType=VARCHAR},
+		#{type,jdbcType=VARCHAR},
+		#{description,jdbcType=VARCHAR},
+		#{updatedby,jdbcType=VARCHAR},
+		now()
+		)
+	</insert>
+	<!-- 修改表名 -->
+	<update id="updateTable" parameterType="system_Table">
+		update t_table t set
+		t.name=#{name,jdbcType=VARCHAR},
+		t.type=#{type,jdbcType=VARCHAR},
+		t.description=#{description,jdbcType=VARCHAR},
+		t.updatedby=#{updatedby,jdbcType=VARCHAR},
+		t.updated=now()
+		where t.id=#{id}
+	</update>
+	<!-- 删除表名 -->
+	<delete id="deleteTable" parameterType="int">
+		delete t from t_table t
+		where t.id=#{id}
+	</delete>
+
+	<sql id="select_column_datagrid">
+		select t.id,t.name,t.type,t.length,t.is_null,t.is_primary,
+		t.is_auto_increment,t.description,t.table_id,
+		(select u.name from
+		t_m_user u where u.username=t.updatedby)
+		updatedby,t.updated,t.default_val
+	</sql>
+	<sql id="select_column_entity">
+		select t.id,t.name,t.type,t.length,t.is_null,t.is_primary,
+		t.is_auto_increment,t.description,t.table_id,
+		t.updatedby,t.updated,t.default_val
+	</sql>
+	<sql id="select_column_param">
+		<!-- * name 表名(模糊查询) -->
+		<if test="name !=null and name !='' ">
+			and t.name like concat('%',trim(#{name}),'%')
+		</if>
+		<!-- * type 类型(TODO 需要重新定义) -->
+		<if test="type !=null and type !='' ">
+			and t.type =#{type}
+		</if>
+		<!-- * description 描述(模糊查询) -->
+		<if test="description != null and description !='' ">
+			and t.description like
+			concat('%',trim(#{description}),'%')
+		</if>
+		<!-- * table_id 所属表id -->
+		<if test="table_id != null and table_id !='' ">
+			and t.table_id = #{table_id}
+		</if>
+	</sql>
+	<!-- 查询字段 -->
+	<select id="queryColumn" parameterType="hashmap"
+		resultMap="column">
+		<include refid="select_column_datagrid" />
+		from t_column t where 1=1
+		<include refid="select_column_param" />
+		limit #{p_begin},#{p_end}
+	</select>
+	<!-- 统计字段 -->
+	<select id="countColumn" parameterType="hashmap"
+		resultType="long">
+		select count(1) from t_column t where 1=1
+		<include refid="select_column_param" />
+	</select>
+	<!-- 查询字段实体 -->
+	<select id="queryColumnEntity" parameterType="int"
+		resultMap="column">
+		<include refid="select_column_entity" />
+		from t_column t where t.id=#{id}
+	</select>
+	<!-- 添加字段名 -->
+	<insert id="addColumn" parameterType="system_Column">
+		insert into t_column
+		(name,type,length,is_null,is_primary,
+		is_auto_increment,description,table_id,
+		updatedby,updated,default_val)
+		values
+		(
+		#{name,jdbcType=VARCHAR},
+		#{type,jdbcType=VARCHAR},
+		#{length,jdbcType=VARCHAR},
+		#{is_null,jdbcType=VARCHAR},
+		#{is_primary,jdbcType=VARCHAR},
+		#{is_auto_increment,jdbcType=VARCHAR},
+		#{description,jdbcType=VARCHAR},
+		#{table_id,jdbcType=VARCHAR},
+		#{updatedby,jdbcType=VARCHAR},
+		now(),
+		#{default_val,jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 修改字段名 -->
+	<update id="updateColumn" parameterType="system_Column">
+		update t_column t set
+		t.name=#{name,jdbcType=VARCHAR},
+		t.type=#{type,jdbcType=VARCHAR},
+		t.length=#{length,jdbcType=VARCHAR},
+		t.is_null=#{is_null,jdbcType=VARCHAR},
+		t.is_primary=#{is_primary,jdbcType=VARCHAR},
+		t.is_auto_increment=#{is_auto_increment,jdbcType=VARCHAR},
+		t.description=#{description,jdbcType=VARCHAR},
+		t.table_id=#{table_id,jdbcType=VARCHAR},
+		t.updatedby=#{updatedby,jdbcType=VARCHAR},
+		t.updated=now(),
+		t.default_val=#{default_val,jdbcType=VARCHAR}
+		where t.id=#{id}
+	</update>
+	<!-- 删除字段名 -->
+	<delete id="deleteColumn" parameterType="int">
+		delete t from t_column t
+		where t.id=#{id}
+	</delete>
+	<!-- 批量删除字段信息 -->
+	<delete id="deleteColumnByTable" parameterType="string">
+		delete t from
+		t_column t where t.table_id=#{tableId}
+	</delete>
+</mapper>

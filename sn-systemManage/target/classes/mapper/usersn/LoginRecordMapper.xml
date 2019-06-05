@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="loginRecord">
+	<resultMap type="LOGIN_RECORD" id="loginrecord">
+		<id column='ID' property='id' />
+		<result column='telephone' property='telephone' />
+		<result column='email' property='email' />
+		<result column='LOGIN_METHOD' property='login_method' />
+		<result column='IP' property='ip' />
+		<result column='EQUIPMENT' property='equipment' />
+		<result column='BROWSER' property='browser' />
+		<result column='CREATE_TIME' property='modifydatetimeStart' />
+		<result column='CREATE_TIME' property='modifydatetimeEnd' />
+	</resultMap>
+	<sql id="sql_select_base">
+		SELECT s.telephone,s.email,t.LOGIN_METHOD,
+		t.Ip,(select d.value_cn from t_dictionary d where d.value=t.EQUIPMENT
+		and d.name='EQUIPMENT')EQUIPMENT,t.BROWSER,t.CREATE_TIME
+	</sql>
+	<!-- 基本界面的查询条件 -->
+	<sql id="sql_select_params">
+		<if test="modifydatetimeStart != null and modifydatetimeStart!=''">
+			and date_format(t.CREATE_TIME,'%Y-%m-%d')&gt;=#{modifydatetimeStart}
+		</if>
+		<if test="modifydatetimeEnd != null and modifydatetimeEnd !='' ">
+			and date_format(t.CREATE_TIME,'%Y-%m-%d')&lt;=#{modifydatetimeEnd}
+		</if>
+		<if test="username != null and username !='' ">
+			and s.TELEPHONE like concat(concat('%',#{username}),'%')
+		</if>
+		<if test="equipment != null and equipment !='' ">
+			and t.equipment = #{equipment}
+		</if>
+		<if test="login_method != null and login_method !='' ">
+			and t.login_method = #{login_method}
+		</if>
+	</sql>
+
+
+
+	<!-- 获取所有的云盘登录记录 -->
+	<select id="getAllLoginRecord" resultMap="loginrecord"
+		parameterType="hashmap">
+		<include refid="sql_select_base" />
+		from t_login_record t left join t_user s on t.USER_ID = s.USER_ID
+		where 1=1
+		<include refid="sql_select_params" />
+		order by t.create_time desc limit #{p_begin},#{p_end}
+	</select>
+
+	<!-- 统计所有的云盘登录记录 -->
+	<select id="countAllLoginRecord" resultType="long"
+		parameterType="hashmap">
+		select count(1) from t_login_record t left join t_user s on t.USER_ID
+		= s.USER_ID where 1=1
+		<include refid="sql_select_params" />
+	</select>
+
+	<!-- 清理30天之前的token数据 -->
+	<delete id="deleteByDays" parameterType="long">
+		delete from
+		t_login_record where
+		date_format(create_time,'%Y-%m-%d') &lt;=DATE_SUB(CURDATE(),INTERVAL #{daysBefore} DAY)
+	</delete>
+</mapper>

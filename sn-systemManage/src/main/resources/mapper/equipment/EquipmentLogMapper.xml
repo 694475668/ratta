@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="equipmentLog">
+	<resultMap type="equipment_Log" id="equipmentLog">
+		<id column="ID" property="id" />
+		<result column="equipment_no" property="equipment_no" />
+		<result column="log_name" property="logName" />
+		<result column="type" property="type" />
+		<result column="firmware_version" property="firmware_version" />
+		<result column="create_time" property="create_time" />
+		<result column="remark" property="remark" />
+		<result column="is_download" property="isDownload" />
+		<result column="flag" property="flag" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		select
+		t.id,t.equipment_no,t.type,t.log_name,t.firmware_version,t.create_time,t.remark,t.is_download,t.flag
+	</sql>
+	<!-- 查询参数 -->
+	<sql id="select_param">
+		<if test="type !=null and type !='' ">
+			and t.type =#{type}
+		</if>
+		<if test="flag !=null and flag !='' ">
+			and t.flag =#{flag}
+		</if>
+		<if test="isDownload !=null and isDownload !='' ">
+			and t.is_download =#{isDownload}
+		</if>
+		<if test="equipment_no !=null and equipment_no !='' ">
+			and t.equipment_no like concat('%',trim(#{equipment_no}),'%')
+		</if>
+		<if test="firmware_version !=null and firmware_version !='' ">
+			and t.firmware_version like concat('%',trim(#{firmware_version}),'%')
+		</if>
+		<if test="beginTime !=null and beginTime !='' ">
+			and date_format(t.create_time,'%Y-%m-%d') &gt;= #{beginTime}
+		</if>
+		<if test="endTime !=null and endTime !='' ">
+			and date_format(t.create_time,'%Y-%m-%d') &lt;= #{endTime}
+		</if>
+	</sql>
+
+	<select id="query" resultMap="equipmentLog"
+		parameterType="hashmap">
+		<include refid="Base_Column_List" />
+		from t_equipment_log t
+		where 1=1
+		<include refid="select_param" />
+		order by t.equipment_no,t.create_time desc limit #{p_begin},#{p_end}
+	</select>
+
+	<select id="count" parameterType="hashmap" resultType="long">
+		select count(*) from t_equipment_log t where 1=1
+		<include refid="select_param" />
+	</select>
+
+	<select id="queryById" parameterType="long"
+		resultMap="equipmentLog">
+		<include refid="Base_Column_List" />
+		from t_equipment_log t where t.id=#{id}
+	</select>
+	<!-- 根据ID更新下载标识、查看标识、备注 -->
+	<update id="updateByParam" parameterType="hashmap">
+		update t_equipment_log t set
+		<if test="flag !=null and flag !='' ">
+			t.flag=#{flag}
+		</if>
+		<if test="remark !=null and remark !='' ">
+			,t.remark=#{remark}
+		</if>
+		<if test="isDownload !=null and isDownload !='' ">
+			t.is_download=#{isDownload}
+		</if>
+		where t.id=#{id}
+	</update>
+	<delete id="delete" parameterType="long">
+		delete from t_equipment_log where id=#{id}
+	</delete>
+	<!-- 查询某时间点之前的数据 -->
+	<select id="selectByDays" parameterType="long"
+		resultMap="equipmentLog">
+		select t.* from t_equipment_log t where
+		date_format(t.create_time,'%Y-%m-%d') &lt;=DATE_SUB(CURDATE(),INTERVAL
+		#{daysBefore} DAY) and t.type='1'
+		union
+		select t.* from t_equipment_log t where
+		date_format(t.create_time,'%Y-%m-%d') &lt;=DATE_SUB(CURDATE(),INTERVAL
+		#{daysBefore} DAY) and t.type='2' and t.flag='2'
+	</select>
+</mapper>

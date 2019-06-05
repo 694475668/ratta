@@ -1,0 +1,26 @@
+
+
+#zoomdiv{
+	position: absolute;
+	background: #ffffff;
+	border: 1px solid #CCCCCC;
+	display: none;
+	text-align: center;
+	overflow: hidden;
+	margin-top: 100px;
+}
+
+#zoomup{
+/* 	position: absolute; */
+    margin-top: -60px;
+	background: #c0c0c0;
+	display: none;
+	filter: alpha(opacity = 50);
+	opacity: .5;
+	cursor: move;
+}
+
+.zoom{
+	width: 100px;
+	vertical-align: bottom; /*处理IE bug*/
+}
